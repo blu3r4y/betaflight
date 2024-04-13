@@ -55,7 +55,7 @@ ifneq ($(OSFAMILY), windows)
         # binary only release so just extract it
 	$(V1) tar -C $(TOOLS_DIR) -xjf "$(DL_DIR)/$(ARM_SDK_FILE)"
 else
-	$(V1) unzip -q -d $(ARM_SDK_DIR) "$(DL_DIR)/$(ARM_SDK_FILE)"
+	$(V1) unzip -q -d $(TOOLS_DIR) "$(DL_DIR)/$(ARM_SDK_FILE)"
 endif
 
 .PHONY: arm_sdk_download
