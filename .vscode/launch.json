@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "openocd+gdb",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/obj/main/betaflight_STM32F405.elf",
+            "device": "STM32F407VGT6",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "armToolchainPath": "${workspaceFolder}/tools/gcc-arm-none-eabi-10.3-2021.10/bin",
+            "configFiles": [
+                "interface/stlink-dap.cfg",
+                "target/stm32f4x.cfg",
+            ],
+            "searchDir": [],
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+            // "preLaunchTask": "debug+flash",
+        }
+    ]
+}
