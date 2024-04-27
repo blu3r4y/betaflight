@@ -18,35 +18,25 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #include "platform.h"
 
 #include "drivers/io.h"
-#include "pg/esc.h"
-
-#include "common/utils.h"
+#include "pg/pg.h"
+#include "pg/pg_ids.h"
 
 #include "esc.h"
 
-static volatile bool toggle = false;
+PG_REGISTER_WITH_RESET_TEMPLATE(escConfig_t, escConfig, PG_ESC_CONFIG, 0);
 
-static void escToggleInit(const ioTag_t tag) {
-    IO_t escIO = IOGetByTag(tag);
+#ifndef ESC_HZ
+#define ESC_HZ   100
+#endif
 
-    if (escIO) {
-        IOInit(escIO, OWNER_ESC, 0);
-    }
-}
+#ifndef BEEPER_PIN
+#define BEEPER_PIN      NONE
+#endif
 
-void escInit(const escConfig_t *config) {
-    escToggleInit(config->ioTag);
-}
-
-void escTogglePin(timeUs_t currentTimeUs)
-{
-    UNUSED(currentTimeUs);
-
-    toggle = !toggle;
-}
+PG_RESET_TEMPLATE(escConfig_t, escConfig,
+    .ioTag = IO_TAG(BEEPER_PIN),
+    .frequency = ESC_HZ
+);

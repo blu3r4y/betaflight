@@ -18,35 +18,20 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdbool.h>
-#include <stdint.h>
+#pragma once
 
-#include "platform.h"
+#include "common/time.h"
 
-#include "drivers/io.h"
-#include "pg/esc.h"
+#include "drivers/io_types.h"
 
-#include "common/utils.h"
+#include "pg/pg.h"
 
-#include "esc.h"
+typedef struct escConfig_s {
+    ioTag_t ioTag;
+    uint16_t frequency;
+} escConfig_t;
 
-static volatile bool toggle = false;
+PG_DECLARE(escConfig_t, escConfig);
 
-static void escToggleInit(const ioTag_t tag) {
-    IO_t escIO = IOGetByTag(tag);
-
-    if (escIO) {
-        IOInit(escIO, OWNER_ESC, 0);
-    }
-}
-
-void escInit(const escConfig_t *config) {
-    escToggleInit(config->ioTag);
-}
-
-void escTogglePin(timeUs_t currentTimeUs)
-{
-    UNUSED(currentTimeUs);
-
-    toggle = !toggle;
-}
+void escInit(const escConfig_t *config);
+void escTogglePin(timeUs_t currentTimeUs);
