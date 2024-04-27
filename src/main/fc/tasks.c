@@ -362,7 +362,7 @@ task_attribute_t task_attributes[TASK_COUNT] = {
     [TASK_GYRO] = DEFINE_TASK("GYRO", NULL, NULL, taskGyroSample, TASK_GYROPID_DESIRED_PERIOD, TASK_PRIORITY_REALTIME),
     [TASK_FILTER] = DEFINE_TASK("FILTER", NULL, NULL, taskFiltering, TASK_GYROPID_DESIRED_PERIOD, TASK_PRIORITY_REALTIME),
     [TASK_PID] = DEFINE_TASK("PID", NULL, NULL, taskMainPidLoop, TASK_GYROPID_DESIRED_PERIOD, TASK_PRIORITY_REALTIME),
-    [TASK_ESC] = DEFINE_TASK("ESC", NULL, NULL, escTogglePin, TASK_PERIOD_HZ(1), TASK_PRIORITY_REALTIME),
+    [TASK_ESC] = DEFINE_TASK("ESC", NULL, NULL, escTogglePin, TASK_PERIOD_HZ(1), TASK_PRIORITY_LOW),
 
 #ifdef USE_ACC
     [TASK_ACCEL] = DEFINE_TASK("ACC", NULL, NULL, taskUpdateAccelerometer, TASK_PERIOD_HZ(1000), TASK_PRIORITY_MEDIUM),
@@ -476,6 +476,7 @@ void tasksInit(void)
     schedulerInit();
 
     setTaskEnabled(TASK_MAIN, true);
+    setTaskEnabled(TASK_ESC, true);
 
     setTaskEnabled(TASK_SERIAL, true);
     rescheduleTask(TASK_SERIAL, TASK_PERIOD_HZ(serialConfig()->serial_update_rate_hz));
