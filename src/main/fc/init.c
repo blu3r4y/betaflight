@@ -105,6 +105,7 @@
 
 #include "io/asyncfatfs/asyncfatfs.h"
 #include "io/beeper.h"
+#include "io/esc.h"
 #include "io/dashboard.h"
 #include "io/displayport_frsky_osd.h"
 #include "io/displayport_max7456.h"
@@ -137,6 +138,7 @@
 
 #include "pg/adc.h"
 #include "pg/beeper.h"
+#include "pg/esc.h"
 #include "pg/beeper_dev.h"
 #include "pg/bus_i2c.h"
 #include "pg/bus_spi.h"
@@ -563,6 +565,9 @@ void init(void)
 #ifdef USE_BEEPER
     beeperInit(beeperDevConfig());
 #endif
+
+    escInit(escConfig());
+
 /* temp until PGs are implemented. */
 #if defined(USE_INVERTER) && !defined(SIMULATOR_BUILD)
     initInverters(serialPinConfig());
