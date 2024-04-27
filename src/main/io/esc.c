@@ -27,9 +27,11 @@
 
 #include "esc.h"
 
+static volatile bool toggle = false;
+
 void escTogglePin(timeUs_t currentTimeUs)
 {
     UNUSED(currentTimeUs);
 
-    // TODO
+    toggle = !toggle;
 }
