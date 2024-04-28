@@ -25,18 +25,28 @@
 
 #include "drivers/io.h"
 #include "pg/esc.h"
+#include "drivers/io_impl.h"
 
 #include "common/utils.h"
 
 #include "esc.h"
 
 static volatile bool toggle = false;
+static IO_t escIO;
+
+
+static void pinSet(IO_t led, bool on)
+{
+    IOWrite(led, on);
+}
 
 static void escToggleInit(const ioTag_t tag) {
-    IO_t escIO = IOGetByTag(tag);
+    escIO = IOGetByTag(tag);
 
     if (escIO) {
         IOInit(escIO, OWNER_ESC, 0);
+        IOConfigGPIO(escIO, IOCFG_OUT_PP);
+        ledSet(0, false);
     }
 }
 
@@ -49,4 +59,5 @@ void escTogglePin(timeUs_t currentTimeUs)
     UNUSED(currentTimeUs);
 
     toggle = !toggle;
+    pinSet(escIO, toggle);
 }
