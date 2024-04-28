@@ -566,7 +566,9 @@ void init(void)
     beeperInit(beeperDevConfig());
 #endif
 
+#ifdef USE_ESC
     escInit(escConfig());
+#endif
 
 /* temp until PGs are implemented. */
 #if defined(USE_INVERTER) && !defined(SIMULATOR_BUILD)
