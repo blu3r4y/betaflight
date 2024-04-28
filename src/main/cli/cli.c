@@ -132,6 +132,7 @@ bool cliMode = false;
 #include "pg/adc.h"
 #include "pg/beeper.h"
 #include "pg/beeper_dev.h"
+#include "pg/esc.h"
 #include "pg/board.h"
 #include "pg/bus_i2c.h"
 #include "pg/bus_spi.h"
@@ -5006,6 +5007,9 @@ typedef struct {
 const cliResourceValue_t resourceTable[] = {
 #if defined(USE_BEEPER)
     DEFS( OWNER_BEEPER,        PG_BEEPER_DEV_CONFIG, beeperDevConfig_t, ioTag) ,
+#endif
+#if defined(USE_ESC)
+    DEFS( OWNER_ESC,        PG_ESC_CONFIG, escConfig_s, ioTag) ,
 #endif
     DEFA( OWNER_MOTOR,         PG_MOTOR_CONFIG, motorConfig_t, dev.ioTags[0], MAX_SUPPORTED_MOTORS ),
 #if defined(USE_SERVOS)
