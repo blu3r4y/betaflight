@@ -20,6 +20,10 @@
 
 #pragma once
 
+/* 
+ * make sure to keep the order in sync
+ * with ownerNames in resource.c
+ */
 typedef enum {
     OWNER_FREE = 0,
     OWNER_PWMINPUT,
@@ -27,12 +31,12 @@ typedef enum {
     OWNER_MOTOR,
     OWNER_SERVO,
     OWNER_LED,
+    OWNER_ESC,    
     OWNER_ADC,
     OWNER_ADC_BATT,
     OWNER_ADC_CURR,
     OWNER_ADC_EXT,
     OWNER_ADC_RSSI,
-    OWNER_ESC,
     OWNER_SERIAL_TX,
     OWNER_SERIAL_RX,
     OWNER_PINDEBUG,

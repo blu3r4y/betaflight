@@ -46,7 +46,7 @@ static void escToggleInit(const ioTag_t tag) {
     if (escIO) {
         IOInit(escIO, OWNER_ESC, 0);
         IOConfigGPIO(escIO, IOCFG_OUT_PP);
-        ledSet(0, false);
+        pinSet(escIO, false);
     }
 }
 

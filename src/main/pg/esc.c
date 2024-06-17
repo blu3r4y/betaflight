@@ -32,11 +32,11 @@ PG_REGISTER_WITH_RESET_TEMPLATE(escConfig_t, escConfig, PG_ESC_CONFIG, 0);
 #define ESC_HZ   100
 #endif
 
-#ifndef BEEPER_PIN
-#define BEEPER_PIN      NONE
+#ifndef ESC_PIN
+#define ESC_PIN      NONE
 #endif
 
 PG_RESET_TEMPLATE(escConfig_t, escConfig,
-    .ioTag = IO_TAG(BEEPER_PIN),
+    .ioTag = IO_TAG(ESC_PIN),
     .frequency = ESC_HZ
 );
