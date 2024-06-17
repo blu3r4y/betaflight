@@ -22,6 +22,10 @@
 
 #include "resource.h"
 
+/* 
+ * make sure to keep the order in sync
+ * with resourceOwner_e in resource.h
+ */
 const char * const ownerNames[OWNER_TOTAL_COUNT] = {
     "FREE",
     "PWM",
@@ -29,6 +33,7 @@ const char * const ownerNames[OWNER_TOTAL_COUNT] = {
     "MOTOR",
     "SERVO",
     "LED",
+    "ESC",    
     "ADC",
     "ADC_BATT",
     "ADC_CURR",
@@ -79,7 +84,6 @@ const char * const ownerNames[OWNER_TOTAL_COUNT] = {
     "COMPASS_CS",
     "RX_BIND_PLUG",
     "ESCSERIAL",
-    "ESC",
     "CAMERA_CONTROL",
     "TIMUP",
     "RANGEFINDER",
