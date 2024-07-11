@@ -5009,7 +5009,7 @@ const cliResourceValue_t resourceTable[] = {
     DEFS( OWNER_BEEPER,        PG_BEEPER_DEV_CONFIG, beeperDevConfig_t, ioTag) ,
 #endif
 #if defined(USE_ESC)
-    DEFS( OWNER_ESC,           PG_ESC_CONFIG, escConfig_t, ioTag) ,
+    DEFA( OWNER_ESC,           PG_ESC_CONFIG, escConfig_t, ioTags[0], ESC_PIN_COUNT ) ,
 #endif
     DEFA( OWNER_MOTOR,         PG_MOTOR_CONFIG, motorConfig_t, dev.ioTags[0], MAX_SUPPORTED_MOTORS ),
 #if defined(USE_SERVOS)
