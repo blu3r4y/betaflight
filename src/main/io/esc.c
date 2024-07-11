@@ -32,26 +32,28 @@
 #include "esc.h"
 
 static volatile bool toggle = false;
-static IO_t escIO;
+static IO_t escIO[ESC_PIN_COUNT];
 
 
-static void pinSet(IO_t led, bool on)
+static void pinSet(IO_t pin, bool on)
 {
-    IOWrite(led, on);
+    IOWrite(pin, on);
 }
 
-static void escToggleInit(const ioTag_t tag) {
-    escIO = IOGetByTag(tag);
+static void escToggleInit(ioTag_t const tag, int const i) {
+    escIO[i] = IOGetByTag(tag);
 
-    if (escIO) {
-        IOInit(escIO, OWNER_ESC, 0);
-        IOConfigGPIO(escIO, IOCFG_OUT_PP);
-        pinSet(escIO, false);
+    if (escIO[i]) {
+        IOInit(escIO[i], OWNER_ESC, 0);
+        IOConfigGPIO(escIO[i], IOCFG_OUT_PP);
+        pinSet(escIO[i], false);
     }
 }
 
 void escInit(const escConfig_t *config) {
-    escToggleInit(config->ioTag);
+    for (int i = 0; i < ESC_PIN_COUNT; i++) {
+        escToggleInit(config->ioTags[i], i);
+    }
 }
 
 void escTogglePin(timeUs_t currentTimeUs)
@@ -59,5 +61,8 @@ void escTogglePin(timeUs_t currentTimeUs)
     UNUSED(currentTimeUs);
 
     toggle = !toggle;
-    pinSet(escIO, toggle);
+    
+    for (int i = 0; i < ESC_PIN_COUNT; i++) {
+        pinSet(escIO[i], toggle);
+    }
 }

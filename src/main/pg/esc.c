@@ -26,17 +26,29 @@
 
 #include "esc.h"
 
-PG_REGISTER_WITH_RESET_TEMPLATE(escConfig_t, escConfig, PG_ESC_CONFIG, 0);
+PG_REGISTER_WITH_RESET_FN(escConfig_t, escConfig, PG_ESC_CONFIG, 0);
 
 #ifndef ESC_HZ
-#define ESC_HZ   100
+#define ESC_HZ 100
 #endif
 
-#ifndef ESC_PIN
-#define ESC_PIN      NONE
+#ifndef ESC_PIN0
+#define ESC_PIN0 NONE
 #endif
 
-PG_RESET_TEMPLATE(escConfig_t, escConfig,
-    .ioTag = IO_TAG(ESC_PIN),
-    .frequency = ESC_HZ
-);
+#ifndef ESC_PIN1
+#define ESC_PIN1 NONE
+#endif
+
+#ifndef ESC_PIN2
+#define ESC_PIN2 NONE
+#endif
+
+void pgResetFn_escConfig(escConfig_t *escConfig)
+{
+    escConfig->ioTags[0] = IO_TAG(ESC_PIN0);
+    escConfig->ioTags[1] = IO_TAG(ESC_PIN1);
+    escConfig->ioTags[2] = IO_TAG(ESC_PIN2);
+
+    escConfig->frequency = ESC_HZ;
+}

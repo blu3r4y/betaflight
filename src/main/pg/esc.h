@@ -26,8 +26,10 @@
 
 #include "pg/pg.h"
 
+#define ESC_PIN_COUNT 3
+
 typedef struct escConfig_s {
-    ioTag_t ioTag;
+    ioTag_t ioTags[ESC_PIN_COUNT];
     uint16_t frequency;
 } escConfig_t;
 
