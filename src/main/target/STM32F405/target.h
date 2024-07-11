@@ -77,6 +77,8 @@
 
 #define USE_ADC
 
+#define USE_ESC
+
 #define USE_EXTI
 
 #define USE_PID_DENOM_CHECK

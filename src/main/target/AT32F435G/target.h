@@ -89,7 +89,6 @@
 #define USE_DSHOT_BITBAND
 
 #define USE_BEEPER
-#define USE_ESC
 #undef USE_RX_PPM
 #undef USE_RX_PWM
 #undef USE_RX_SPI
