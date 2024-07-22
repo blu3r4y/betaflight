@@ -32,23 +32,39 @@ PG_REGISTER_WITH_RESET_FN(escConfig_t, escConfig, PG_ESC_CONFIG, 0);
 #define ESC_HZ 100
 #endif
 
-#ifndef ESC_PIN0
-#define ESC_PIN0 NONE
+#ifndef ESC_PINAH
+#define ESC_PINAH NONE
 #endif
 
-#ifndef ESC_PIN1
-#define ESC_PIN1 NONE
+#ifndef ESC_PINAL
+#define ESC_PINAL NONE
 #endif
 
-#ifndef ESC_PIN2
-#define ESC_PIN2 NONE
+#ifndef ESC_PINBH
+#define ESC_PINBH NONE
 #endif
+
+#ifndef ESC_PINBL
+#define ESC_PINBL NONE
+#endif
+
+#ifndef ESC_PINCH
+#define ESC_PINCH NONE
+#endif
+
+#ifndef ESC_PINCL
+#define ESC_PINCL NONE
+#endif
+
 
 void pgResetFn_escConfig(escConfig_t *escConfig)
 {
-    escConfig->ioTags[0] = IO_TAG(ESC_PIN0);
-    escConfig->ioTags[1] = IO_TAG(ESC_PIN1);
-    escConfig->ioTags[2] = IO_TAG(ESC_PIN2);
+    escConfig->ioTags[ESC_AH] = IO_TAG(ESC_PINAH);
+    escConfig->ioTags[ESC_AL] = IO_TAG(ESC_PINAL);
+    escConfig->ioTags[ESC_BH] = IO_TAG(ESC_PINBH);
+    escConfig->ioTags[ESC_BL] = IO_TAG(ESC_PINBL);
+    escConfig->ioTags[ESC_CH] = IO_TAG(ESC_PINCH);
+    escConfig->ioTags[ESC_CL] = IO_TAG(ESC_PINCL);
 
     escConfig->frequency = ESC_HZ;
 }

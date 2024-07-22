@@ -946,7 +946,7 @@ const clivalue_t valueTable[] = {
 #endif // USE_BEEPER
 
 #ifdef USE_ESC   
-    { "esc_frequency",              VAR_INT16  | HARDWARE_VALUE, .config.minmax = { 0, 16000 }, PG_BEEPER_DEV_CONFIG, offsetof(escConfig_t, frequency) },
+    { "esc_frequency",              VAR_INT16  | MASTER_VALUE, .config.minmaxUnsigned = { 1, 65000 }, PG_ESC_CONFIG, offsetof(escConfig_t, frequency) },
 #endif
 
 // PG_MIXER_CONFIG
