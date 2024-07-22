@@ -22,4 +22,4 @@
 
 #include "drivers/time.h"
 
-void escTogglePin(timeUs_t currentTimeUs);
+void escLoop(timeUs_t currentTimeUs);

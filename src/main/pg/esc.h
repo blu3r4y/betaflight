@@ -26,7 +26,14 @@
 
 #include "pg/pg.h"
 
-#define ESC_PIN_COUNT 3
+#define ESC_PIN_COUNT 6
+
+#define ESC_AH 0
+#define ESC_AL 1
+#define ESC_BH 2
+#define ESC_BL 3
+#define ESC_CH 4
+#define ESC_CL 5
 
 typedef struct escConfig_s {
     ioTag_t ioTags[ESC_PIN_COUNT];
@@ -36,4 +43,4 @@ typedef struct escConfig_s {
 PG_DECLARE(escConfig_t, escConfig);
 
 void escInit(const escConfig_t *config);
-void escTogglePin(timeUs_t currentTimeUs);
+void escLoop(timeUs_t currentTimeUs);
