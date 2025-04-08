@@ -3,18 +3,27 @@
         {
             "name": "betaflight",
             "includePath": [
+                "${workspaceFolder}/lib/main/STM32F4/**",
                 "${workspaceFolder}/lib/**",
-                "${workspaceFolder}/src/**"
+                "${workspaceFolder}/src/main/target/STM32F405/**",
+                "${workspaceFolder}/src/main/drivers/stm32/**",
+                "${workspaceFolder}/src/main/**"
             ],
             "browse": {
-                "limitSymbolsToIncludedHeaders": true,
-                "path": []
+                "limitSymbolsToIncludedHeaders": false
             },
-            "defines": [],
+            "defines": [
+                "_GNU_SOURCE",
+                "STM32",
+                "STM32F4",
+                "STM32F405xx",
+                "STM32F40_41xxx",
+                "USE_STDPERIPH_DRIVER"
+            ],
             "compilerPath": "${workspaceFolder}/tools/gcc-arm-none-eabi-10.3-2021.10/bin/arm-none-eabi-gcc.exe",
             "compilerArgs": [],
             "intelliSenseMode": "windows-gcc-arm",
-            "cStandard": "c99"
+            "cStandard": "gnu17"
         }
     ],
     "version": 4

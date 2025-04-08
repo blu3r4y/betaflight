@@ -45,11 +45,36 @@ You may also configure the workspace settings instead.
 
 ```json
 {
-    "cortex-debug.openocdPath": "C:/path/to/where/you/unpacked/tools/xpack-openocd-0.12.0-3/bin/openocd.exe"
+  "cortex-debug.openocdPath": "C:/path/to/where/you/unpacked/tools/xpack-openocd-0.12.0-3/bin/openocd.exe"
 }
-```	
+```
 
 You are ready to go. Try the build and launch tasks now.
+
+### Configure the C/C++ and Makefile Tools extension
+
+The C/C++ extension may invoke `gcc` directly. To have them use the correct one, set the following workspace setting:
+
+```json
+{
+  "C_Cpp.default.compilerPath": "${workspaceFolder}/tools/gcc-arm-none-eabi-10.3-2021.10/bin/arm-none-eabi-gcc.exe"
+}
+```
+
+If you also use Makefile Tools (optional) it may invoke `make` directly. To have it use the MSYS2 terminal for that, you can configure `terminal.integrated.automationProfile.windows` in your workspace settings:
+
+```json
+{
+  "terminal.integrated.automationProfile.windows": {
+    "path": "C:/msys64/usr/bin/bash.exe",
+    "args": ["-lc"],
+    "env": {
+      "MSYSTEM": "MSYS",
+      "CHERE_INVOKING": "yes"
+    }
+  }
+}
+```
 
 ### Adding the MSYS2 terminal to VS Code
 
@@ -58,14 +83,14 @@ You can skip the `terminal.integrated.defaultProfile.windows` line if you don't 
 
 ```json
 {
-    "terminal.integrated.profiles.windows": {
-        "MSYS2 MSYS": {
-            "path": "cmd.exe",
-            "args": [
-                "/c",
-                "C:\\msys64\\msys2_shell.cmd -defterm -here -no-start -msys"
-            ]
-        }
+  "terminal.integrated.profiles.windows": {
+    "MSYS2 MSYS": {
+      "path": "cmd.exe",
+      "args": [
+        "/c",
+        "C:\\msys64\\msys2_shell.cmd -defterm -here -no-start -msys"
+      ]
     }
+  }
 }
 ```
