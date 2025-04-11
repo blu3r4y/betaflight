@@ -67,7 +67,7 @@
 			"command": "C:/Program Files (x86)/STMicroelectronics/STM32 ST-LINK Utility/ST-LINK Utility/ST-LINK_CLI.exe",
 			"args": [
 				"-P",
-				"${workspaceFolder}/obj/betaflight_4.5.0_STM32F405.hex",
+				"${workspaceFolder}/obj/betaflight_4.5.2_STM32F405.hex",
 				"-V",
 				"-Rst"
 			],
