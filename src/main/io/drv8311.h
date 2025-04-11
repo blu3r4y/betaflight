@@ -20,27 +20,6 @@
 
 #pragma once
 
-#include "common/time.h"
+#include "drivers/time.h"
 
-#include "drivers/io_types.h"
-
-#include "pg/pg.h"
-
-#define ESC_PIN_COUNT 6
-
-#define ESC_AH 3
-#define ESC_AL 2
-#define ESC_BH 0
-#define ESC_BL 1
-#define ESC_CH 5
-#define ESC_CL 4
-
-typedef struct escConfig_s {
-    ioTag_t ioTags[ESC_PIN_COUNT];
-    uint16_t frequency;
-} escConfig_t;
-
-PG_DECLARE(escConfig_t, escConfig);
-
-void escInit(const escConfig_t *config);
-void escLoop(timeUs_t currentTimeUs);
+void drv8311Loop(timeUs_t currentTimeUs);

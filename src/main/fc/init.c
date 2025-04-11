@@ -105,7 +105,7 @@
 
 #include "io/asyncfatfs/asyncfatfs.h"
 #include "io/beeper.h"
-#include "io/esc.h"
+#include "io/drv8311.h"
 #include "io/dashboard.h"
 #include "io/displayport_frsky_osd.h"
 #include "io/displayport_max7456.h"
@@ -138,7 +138,7 @@
 
 #include "pg/adc.h"
 #include "pg/beeper.h"
-#include "pg/esc.h"
+#include "pg/drv8311.h"
 #include "pg/beeper_dev.h"
 #include "pg/bus_i2c.h"
 #include "pg/bus_spi.h"
@@ -566,8 +566,8 @@ void init(void)
     beeperInit(beeperDevConfig());
 #endif
 
-#ifdef USE_ESC
-    escInit(escConfig());
+#ifdef USE_DRV8311
+    drv8311Init(drv8311Config());
 #endif
 
 /* temp until PGs are implemented. */

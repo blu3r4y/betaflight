@@ -31,7 +31,7 @@ typedef enum {
     OWNER_MOTOR,
     OWNER_SERVO,
     OWNER_LED,
-    OWNER_ESC,    
+    OWNER_DRV8311,    
     OWNER_ADC,
     OWNER_ADC_BATT,
     OWNER_ADC_CURR,

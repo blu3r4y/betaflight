@@ -24,12 +24,12 @@
 #include "platform.h"
 
 #include "drivers/io.h"
-#include "pg/esc.h"
+#include "pg/drv8311.h"
 #include "drivers/io_impl.h"
 
 #include "common/utils.h"
 
-#include "esc.h"
+#include "drv8311.h"
 
 #define ESC_GND 0
 #define ESC_VDD 1
@@ -40,8 +40,8 @@
 #define ESC_L_ON true
 #define ESC_L_OFF false
 
-static IO_t escIO[ESC_PIN_COUNT];
-static uint8_t escState = 1;
+static IO_t drvIO[DRV8311_PIN_COUNT];
+static uint8_t drvState = 1;
 
 static inline void pinSet(IO_t pin, bool on)
 {
@@ -49,7 +49,7 @@ static inline void pinSet(IO_t pin, bool on)
 }
 
 /** Pull one MOSFET stage to VDD, GND, or have them floating */
-static inline void escPinSet(IO_t pinHigh, IO_t pinLow, int mode)
+static inline void drvPinSet(IO_t pinHigh, IO_t pinLow, int mode)
 {
     switch (mode)
     {
@@ -68,57 +68,57 @@ static inline void escPinSet(IO_t pinHigh, IO_t pinLow, int mode)
 }
 
 /** Set the mode (VDD, GND, Z) of all three MOSFET stages at once */
-static inline void escSetModes(int modeA, int modeB, int modeC)
+static inline void drvSetModes(int modeA, int modeB, int modeC)
 {
-    escPinSet(escIO[ESC_AH], escIO[ESC_AL], modeA);
-    escPinSet(escIO[ESC_BH], escIO[ESC_BL], modeB);
-    escPinSet(escIO[ESC_CH], escIO[ESC_CL], modeC);
+    drvPinSet(drvIO[DRV8311_AH], drvIO[DRV8311_AL], modeA);
+    drvPinSet(drvIO[DRV8311_BH], drvIO[DRV8311_BL], modeB);
+    drvPinSet(drvIO[DRV8311_CH], drvIO[DRV8311_CL], modeC);
 }
 
-void escInit(const escConfig_t *config)
+void drv8311Init(const drv8311Config_t *config)
 {
-    for (int i = 0; i < ESC_PIN_COUNT; i++)
+    for (int i = 0; i < DRV8311_PIN_COUNT; i++)
     {
-        escIO[i] = IOGetByTag(config->ioTags[i]);
-        if (escIO[i])
+        drvIO[i] = IOGetByTag(config->ioTags[i]);
+        if (drvIO[i])
         {
-            IOInit(escIO[i], OWNER_ESC, 0);
-            IOConfigGPIO(escIO[i], IOCFG_OUT_PP);
-            pinSet(escIO[i], false);
+            IOInit(drvIO[i], OWNER_DRV8311, 0);
+            IOConfigGPIO(drvIO[i], IOCFG_OUT_PP);
+            pinSet(drvIO[i], false);
         }
     }
 }
 
-void escLoop(timeUs_t currentTimeUs)
+void drv8311Loop(timeUs_t currentTimeUs)
 {
     UNUSED(currentTimeUs);
 
-    switch (escState)
+    switch (drvState)
     {
     default:
     case 1:
-        escSetModes(ESC_GND, ESC_VDD, ESC_FLT);
-        escState = 2;
+        drvSetModes(ESC_GND, ESC_VDD, ESC_FLT);
+        drvState = 2;
         break;
     case 2:
-        escSetModes(ESC_FLT, ESC_VDD, ESC_GND);
-        escState = 3;
+        drvSetModes(ESC_FLT, ESC_VDD, ESC_GND);
+        drvState = 3;
         break;
     case 3:
-        escSetModes(ESC_VDD, ESC_FLT, ESC_GND);
-        escState = 4;
+        drvSetModes(ESC_VDD, ESC_FLT, ESC_GND);
+        drvState = 4;
         break;
     case 4:
-        escSetModes(ESC_VDD, ESC_GND, ESC_FLT);
-        escState = 5;
+        drvSetModes(ESC_VDD, ESC_GND, ESC_FLT);
+        drvState = 5;
         break;
     case 5:
-        escSetModes(ESC_FLT, ESC_GND, ESC_VDD);
-        escState = 6;
+        drvSetModes(ESC_FLT, ESC_GND, ESC_VDD);
+        drvState = 6;
         break;
     case 6:
-        escSetModes(ESC_GND, ESC_FLT, ESC_VDD);
-        escState = 1;
+        drvSetModes(ESC_GND, ESC_FLT, ESC_VDD);
+        drvState = 1;
         break;
     }
 }

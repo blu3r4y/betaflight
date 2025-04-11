@@ -33,7 +33,7 @@ const char * const ownerNames[OWNER_TOTAL_COUNT] = {
     "MOTOR",
     "SERVO",
     "LED",
-    "ESC",    
+    "DRV8311",
     "ADC",
     "ADC_BATT",
     "ADC_CURR",

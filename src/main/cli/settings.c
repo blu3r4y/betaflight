@@ -80,7 +80,7 @@
 #include "pg/adc.h"
 #include "pg/beeper.h"
 #include "pg/beeper_dev.h"
-#include "pg/esc.h"
+#include "pg/drv8311.h"
 #include "pg/bus_i2c.h"
 #include "pg/dashboard.h"
 #include "pg/displayport_profiles.h"
@@ -945,8 +945,8 @@ const clivalue_t valueTable[] = {
 #endif
 #endif // USE_BEEPER
 
-#ifdef USE_ESC   
-    { "esc_frequency",              VAR_INT16  | MASTER_VALUE, .config.minmaxUnsigned = { 1, 65000 }, PG_ESC_CONFIG, offsetof(escConfig_t, frequency) },
+#ifdef USE_DRV8311   
+    { "esc_frequency",              VAR_INT16  | MASTER_VALUE, .config.minmaxUnsigned = { 1, 65000 }, PG_DRV8311_CONFIG, offsetof(drv8311Config_t, frequency) },
 #endif
 
 // PG_MIXER_CONFIG

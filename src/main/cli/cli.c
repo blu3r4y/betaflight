@@ -132,7 +132,7 @@ bool cliMode = false;
 #include "pg/adc.h"
 #include "pg/beeper.h"
 #include "pg/beeper_dev.h"
-#include "pg/esc.h"
+#include "pg/drv8311.h"
 #include "pg/board.h"
 #include "pg/bus_i2c.h"
 #include "pg/bus_spi.h"
@@ -5006,8 +5006,8 @@ const cliResourceValue_t resourceTable[] = {
 #if defined(USE_BEEPER)
     DEFS( OWNER_BEEPER,        PG_BEEPER_DEV_CONFIG, beeperDevConfig_t, ioTag) ,
 #endif
-#if defined(USE_ESC)
-    DEFA( OWNER_ESC,           PG_ESC_CONFIG, escConfig_t, ioTags[0], ESC_PIN_COUNT ) ,
+#if defined(USE_DRV8311)
+    DEFA( OWNER_DRV8311,       PG_DRV8311_CONFIG, drv8311Config_t, ioTags[0], DRV8311_PIN_COUNT ) ,
 #endif
     DEFA( OWNER_MOTOR,         PG_MOTOR_CONFIG, motorConfig_t, dev.ioTags[0], MAX_SUPPORTED_MOTORS ),
 #if defined(USE_SERVOS)

@@ -24,47 +24,47 @@
 #include "pg/pg.h"
 #include "pg/pg_ids.h"
 
-#include "esc.h"
+#include "drv8311.h"
 
-PG_REGISTER_WITH_RESET_FN(escConfig_t, escConfig, PG_ESC_CONFIG, 0);
+PG_REGISTER_WITH_RESET_FN(drv8311Config_t, drv8311Config, PG_DRV8311_CONFIG, 0);
 
-#ifndef ESC_HZ
-#define ESC_HZ 100
+#ifndef DRV8311_HZ
+#define DRV8311_HZ 1
 #endif
 
-#ifndef ESC_PINAH
-#define ESC_PINAH NONE
+#ifndef DRV8311_PINAH
+#define DRV8311_PINAH NONE
 #endif
 
-#ifndef ESC_PINAL
-#define ESC_PINAL NONE
+#ifndef DRV8311_PINAL
+#define DRV8311_PINAL NONE
 #endif
 
-#ifndef ESC_PINBH
-#define ESC_PINBH NONE
+#ifndef DRV8311_PINBH
+#define DRV8311_PINBH NONE
 #endif
 
-#ifndef ESC_PINBL
-#define ESC_PINBL NONE
+#ifndef DRV8311_PINBL
+#define DRV8311_PINBL NONE
 #endif
 
-#ifndef ESC_PINCH
-#define ESC_PINCH NONE
+#ifndef DRV8311_PINCH
+#define DRV8311_PINCH NONE
 #endif
 
-#ifndef ESC_PINCL
-#define ESC_PINCL NONE
+#ifndef DRV8311_PINCL
+#define DRV8311_PINCL NONE
 #endif
 
 
-void pgResetFn_escConfig(escConfig_t *escConfig)
+void pgResetFn_drv8311Config(drv8311Config_t *drv8311Config)
 {
-    escConfig->ioTags[ESC_AH] = IO_TAG(ESC_PINAH);
-    escConfig->ioTags[ESC_AL] = IO_TAG(ESC_PINAL);
-    escConfig->ioTags[ESC_BH] = IO_TAG(ESC_PINBH);
-    escConfig->ioTags[ESC_BL] = IO_TAG(ESC_PINBL);
-    escConfig->ioTags[ESC_CH] = IO_TAG(ESC_PINCH);
-    escConfig->ioTags[ESC_CL] = IO_TAG(ESC_PINCL);
+    drv8311Config->ioTags[DRV8311_AH] = IO_TAG(DRV8311_PINAH);
+    drv8311Config->ioTags[DRV8311_AL] = IO_TAG(DRV8311_PINAL);
+    drv8311Config->ioTags[DRV8311_BH] = IO_TAG(DRV8311_PINBH);
+    drv8311Config->ioTags[DRV8311_BL] = IO_TAG(DRV8311_PINBL);
+    drv8311Config->ioTags[DRV8311_CH] = IO_TAG(DRV8311_PINCH);
+    drv8311Config->ioTags[DRV8311_CL] = IO_TAG(DRV8311_PINCL);
 
-    escConfig->frequency = ESC_HZ;
+    drv8311Config->frequency = DRV8311_HZ;
 }

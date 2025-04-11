@@ -81,7 +81,7 @@
 
 #define USE_ADC
 
-#define USE_ESC
+#define USE_DRV8311
 
 #define USE_EXTI
 
