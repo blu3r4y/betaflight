@@ -158,6 +158,7 @@ bool spiReadRegBufRB(const extDevice_t *dev, uint8_t reg, uint8_t *data, uint8_t
 bool spiReadRegMskBufRB(const extDevice_t *dev, uint8_t reg, uint8_t *data, uint8_t length);
 
 void spiWrite(const extDevice_t *dev, uint8_t data);
+void spiWrite32Bit(const extDevice_t *dev, uint8_t const data[]);
 void spiWriteReg(const extDevice_t *dev, uint8_t reg, uint8_t data);
 bool spiWriteRegRB(const extDevice_t *dev, uint8_t reg, uint8_t data);
 
