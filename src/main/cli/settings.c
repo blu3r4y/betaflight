@@ -946,7 +946,7 @@ const clivalue_t valueTable[] = {
 #endif // USE_BEEPER
 
 #ifdef USE_DRV8311   
-    { "esc_frequency",              VAR_INT16  | MASTER_VALUE, .config.minmaxUnsigned = { 1, 65000 }, PG_DRV8311_CONFIG, offsetof(drv8311Config_t, frequency) },
+    { "drv8311_spi_bus",            VAR_UINT8  | HARDWARE_VALUE, .config.minmaxUnsigned = { 0, SPIDEV_COUNT }, PG_DRV8311_CONFIG, offsetof(drv8311Config_t, spiDevice) },
 #endif
 
 // PG_MIXER_CONFIG

@@ -5007,7 +5007,11 @@ const cliResourceValue_t resourceTable[] = {
     DEFS( OWNER_BEEPER,        PG_BEEPER_DEV_CONFIG, beeperDevConfig_t, ioTag) ,
 #endif
 #if defined(USE_DRV8311)
-    DEFA( OWNER_DRV8311,       PG_DRV8311_CONFIG, drv8311Config_t, ioTags[0], DRV8311_PIN_COUNT ) ,
+    DEFA( OWNER_DRV8311,       PG_DRV8311_CONFIG, drv8311Config_t, faultTags[0], DRV8311_DEVICE_COUNT ) ,
+    DEFA( OWNER_DRV8311,       PG_DRV8311_CONFIG, drv8311Config_t, csTags[0], DRV8311_DEVICE_COUNT ) ,
+    DEFS( OWNER_DRV8311,       PG_DRV8311_CONFIG, drv8311Config_t, sleepTag ),
+    DEFS( OWNER_DRV8311,       PG_DRV8311_CONFIG, drv8311Config_t, pwnSyncTag ),
+    DEFA( OWNER_DRV8311,       PG_DRV8311_CONFIG, drv8311Config_t, currentAdcTags[0], DRV8311_PHASE_COUNT ) ,
 #endif
     DEFA( OWNER_MOTOR,         PG_MOTOR_CONFIG, motorConfig_t, dev.ioTags[0], MAX_SUPPORTED_MOTORS ),
 #if defined(USE_SERVOS)

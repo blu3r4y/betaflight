@@ -20,27 +20,29 @@
 
 #pragma once
 
-#include "common/time.h"
-
 #include "drivers/io_types.h"
-
 #include "pg/pg.h"
 
-#define DRV8311_PIN_COUNT 6
+#include "common/time.h"
 
-#define DRV8311_AH 3
-#define DRV8311_AL 2
-#define DRV8311_BH 0
-#define DRV8311_BL 1
-#define DRV8311_CH 5
-#define DRV8311_CL 4
+// number of chips to be driven by this driver
+#define DRV8311_DEVICE_COUNT 4
+
+// number of output phases per chip
+#define DRV8311_PHASE_COUNT 3
 
 typedef struct drv8311Config_s {
-    ioTag_t ioTags[DRV8311_PIN_COUNT];
-    uint16_t frequency;
+    uint8_t spiDevice;
+
+    ioTag_t faultTags[DRV8311_DEVICE_COUNT];
+    ioTag_t csTags[DRV8311_DEVICE_COUNT];
+    ioTag_t sleepTag;
+    ioTag_t pwnSyncTag;
+
+    // only supports measurements for one chip
+    ioTag_t currentAdcTags[DRV8311_PHASE_COUNT];
 } drv8311Config_t;
 
 PG_DECLARE(drv8311Config_t, drv8311Config);
 
-void drv8311Init(const drv8311Config_t *config);
 void drv8311Loop(timeUs_t currentTimeUs);

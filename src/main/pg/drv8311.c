@@ -20,51 +20,97 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "drivers/io.h"
+#include "platform.h"
+
+#ifdef USE_DRV8311
+
 #include "pg/pg.h"
 #include "pg/pg_ids.h"
+
+#include "drivers/io.h"
+#include "drivers/bus_spi.h"
+
+#include "common/utils.h"
 
 #include "drv8311.h"
 
 PG_REGISTER_WITH_RESET_FN(drv8311Config_t, drv8311Config, PG_DRV8311_CONFIG, 0);
 
-#ifndef DRV8311_HZ
-#define DRV8311_HZ 1
+#ifndef DRV8311_SPI_INSTANCE
+#define DRV8311_SPI_INSTANCE NULL
 #endif
 
-#ifndef DRV8311_PINAH
-#define DRV8311_PINAH NONE
+#ifndef DRV8311_FAULT_PIN0
+#define DRV8311_FAULT_PIN0 PC7
 #endif
 
-#ifndef DRV8311_PINAL
-#define DRV8311_PINAL NONE
+#ifndef DRV8311_FAULT_PIN1
+#define DRV8311_FAULT_PIN1 PC9
 #endif
 
-#ifndef DRV8311_PINBH
-#define DRV8311_PINBH NONE
+#ifndef DRV8311_FAULT_PIN2
+#define DRV8311_FAULT_PIN2 PE6
 #endif
 
-#ifndef DRV8311_PINBL
-#define DRV8311_PINBL NONE
+#ifndef DRV8311_FAULT_PIN3
+#define DRV8311_FAULT_PIN3 PE5
 #endif
 
-#ifndef DRV8311_PINCH
-#define DRV8311_PINCH NONE
+#ifndef DRV8311_CS_PIN0
+#define DRV8311_CS_PIN0 PC6
 #endif
 
-#ifndef DRV8311_PINCL
-#define DRV8311_PINCL NONE
+#ifndef DRV8311_CS_PIN1
+#define DRV8311_CS_PIN1 PC8
 #endif
 
+#ifndef DRV8311_CS_PIN2
+#define DRV8311_CS_PIN2 PA8
+#endif
+
+#ifndef DRV8311_CS_PIN3
+#define DRV8311_CS_PIN3 PE4
+#endif
+
+#ifndef DRV8311_SLEEP_PIN
+#define DRV8311_SLEEP_PIN PD10
+#endif
+
+#ifndef DRV8311_PWM_SYNC_PIN
+#define DRV8311_PWM_SYNC_PIN PD11
+#endif
+
+#ifndef DRV8311_CURRENT_ADC_PIN0
+#define DRV8311_CURRENT_ADC_PIN0 PA2
+#endif
+
+#ifndef DRV8311_CURRENT_ADC_PIN1
+#define DRV8311_CURRENT_ADC_PIN1 PA3
+#endif
+
+#ifndef DRV8311_CURRENT_ADC_PIN2
+#define DRV8311_CURRENT_ADC_PIN2 PB3
+#endif
 
 void pgResetFn_drv8311Config(drv8311Config_t *drv8311Config)
 {
-    drv8311Config->ioTags[DRV8311_AH] = IO_TAG(DRV8311_PINAH);
-    drv8311Config->ioTags[DRV8311_AL] = IO_TAG(DRV8311_PINAL);
-    drv8311Config->ioTags[DRV8311_BH] = IO_TAG(DRV8311_PINBH);
-    drv8311Config->ioTags[DRV8311_BL] = IO_TAG(DRV8311_PINBL);
-    drv8311Config->ioTags[DRV8311_CH] = IO_TAG(DRV8311_PINCH);
-    drv8311Config->ioTags[DRV8311_CL] = IO_TAG(DRV8311_PINCL);
+    drv8311Config->spiDevice = SPI_DEV_TO_CFG(spiDeviceByInstance(DRV8311_SPI_INSTANCE));
 
-    drv8311Config->frequency = DRV8311_HZ;
+    drv8311Config->faultTags[0] = IO_TAG(DRV8311_FAULT_PIN0);
+    drv8311Config->faultTags[1] = IO_TAG(DRV8311_FAULT_PIN1);
+    drv8311Config->faultTags[2] = IO_TAG(DRV8311_FAULT_PIN2);
+    drv8311Config->faultTags[3] = IO_TAG(DRV8311_FAULT_PIN3);
+
+    drv8311Config->csTags[0] = IO_TAG(DRV8311_CS_PIN0);
+    drv8311Config->csTags[1] = IO_TAG(DRV8311_CS_PIN1);
+    drv8311Config->csTags[2] = IO_TAG(DRV8311_CS_PIN2);
+    drv8311Config->csTags[3] = IO_TAG(DRV8311_CS_PIN3);
+
+    drv8311Config->sleepTag = IO_TAG(DRV8311_SLEEP_PIN);
+    drv8311Config->pwnSyncTag = IO_TAG(DRV8311_PWM_SYNC_PIN);
+
+    drv8311Config->currentAdcTags[0] = IO_TAG(DRV8311_CURRENT_ADC_PIN0);
+    drv8311Config->currentAdcTags[1] = IO_TAG(DRV8311_CURRENT_ADC_PIN1);
+    drv8311Config->currentAdcTags[2] = IO_TAG(DRV8311_CURRENT_ADC_PIN2);
 }
+#endif // USE_DRV8311

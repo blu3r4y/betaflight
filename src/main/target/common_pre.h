@@ -153,6 +153,10 @@
 #define USE_MAX7456
 #endif
 
+#if !defined(USE_DRV8311)
+#define USE_DRV8311
+#endif
+
 #if !defined(USE_RX_SPI)
 #define USE_RX_SPI
 

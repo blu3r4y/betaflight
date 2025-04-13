@@ -20,7 +20,19 @@
 
 #pragma once
 
-void drvInit(void);
+#include "pg/drv8311.h"
+
+typedef enum {
+    // IO defined and DRV8311 was detected
+    DRV8311_INIT_OK = 0,
+    // IO defined, but DRV8311 could not be detected
+    DRV8311_INIT_NOT_FOUND = -1,
+    // No DRV8311 IO defined, which means either the
+    // we don't have it or it's not properly configured
+    DRV8311_INIT_NOT_CONFIGURED = -2,
+} drv8311InitStatus_e;
+
+drv8311InitStatus_e drvInit(const drv8311Config_t *config);
 
 void drvEnable(void);
 void drvDisable(void);

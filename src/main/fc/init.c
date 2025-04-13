@@ -84,6 +84,7 @@
 #include "drivers/vtx_common.h"
 #include "drivers/vtx_rtc6705.h"
 #include "drivers/vtx_table.h"
+#include "drivers/drv8311.h"
 
 #include "fc/board_info.h"
 #include "fc/dispatch.h"
@@ -567,7 +568,7 @@ void init(void)
 #endif
 
 #ifdef USE_DRV8311
-    drv8311Init(drv8311Config());
+    drvInit(drv8311Config());
 #endif
 
 /* temp until PGs are implemented. */

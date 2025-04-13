@@ -81,8 +81,6 @@
 
 #define USE_ADC
 
-#define USE_DRV8311
-
 #define USE_EXTI
 
 #define USE_PID_DENOM_CHECK

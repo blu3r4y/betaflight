@@ -256,7 +256,7 @@ void spiWrite(const extDevice_t *dev, uint8_t data)
 }
 
 // Wait for bus to become free, then write exactly four bytes
-void spiWrite32Bit(const extDevice_t *dev, uint8_t const data[])
+void spiWrite32Bit(const extDevice_t *dev, uint8_t data[])
 {
     // This routine blocks so no need to use static data
     busSegment_t segments[] = {
