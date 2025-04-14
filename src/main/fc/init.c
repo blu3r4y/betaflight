@@ -567,10 +567,6 @@ void init(void)
     beeperInit(beeperDevConfig());
 #endif
 
-#ifdef USE_DRV8311
-    drvInit(drv8311Config());
-#endif
-
 /* temp until PGs are implemented. */
 #if defined(USE_INVERTER) && !defined(SIMULATOR_BUILD)
     initInverters(serialPinConfig());
@@ -881,6 +877,10 @@ void init(void)
     // Initialize MSP
     mspInit();
     mspSerialInit();
+
+#ifdef USE_DRV8311
+    drvInit(drv8311Config());
+#endif
 
 /*
  * CMS, display devices and OSD
