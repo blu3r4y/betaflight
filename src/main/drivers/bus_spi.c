@@ -255,15 +255,15 @@ void spiWrite(const extDevice_t *dev, uint8_t data)
     spiWait(dev);
 }
 
-// Wait for bus to become free, then write exactly four bytes
-void spiWrite32Bit(const extDevice_t *dev, uint8_t data[])
+// Wait for bus to become free, then write/read exactly four bytes
+void spiReadWrite32Bit(const extDevice_t *dev, uint8_t txData[], uint8_t rxData[])
 {
     // This routine blocks so no need to use static data
     busSegment_t segments[] = {
-            {.u.buffers = {&data[0], NULL}, sizeof(data[0]), false, NULL},
-            {.u.buffers = {&data[1], NULL}, sizeof(data[1]), false, NULL},
-            {.u.buffers = {&data[2], NULL}, sizeof(data[2]), false, NULL},
-            {.u.buffers = {&data[3], NULL}, sizeof(data[3]), true, NULL},
+            {.u.buffers = {&txData[0], &rxData[0]}, sizeof(txData[0]), false, NULL},
+            {.u.buffers = {&txData[1], &rxData[1]}, sizeof(txData[1]), false, NULL},
+            {.u.buffers = {&txData[2], &rxData[2]}, sizeof(txData[2]), false, NULL},
+            {.u.buffers = {&txData[3], &rxData[3]}, sizeof(txData[3]), true, NULL},
             {.u.link = {NULL, NULL}, 0, true, NULL},
     };
 

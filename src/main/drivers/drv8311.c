@@ -114,6 +114,16 @@
  * Definitions
 */
 
+// TODO: Parse this into bitfields (for know, the uint16 values are enough)
+typedef struct
+{
+    uint16_t DEV_STS1;
+    uint16_t OT_STS;
+    uint16_t SUP_STS;
+    uint16_t DRV_STS;
+    uint16_t SYS_STS; 
+}t_statusInformation;
+
 /*******************************************************************************
  * Local Variables
 */
@@ -127,6 +137,9 @@ static IO_t sleepIO;
 static IO_t pwmSyncIO;
 
 static IO_t currentAdcIO[DRV8311_PHASE_COUNT];
+
+// current status about all drivers
+t_statusInformation drv8311StatusInfo[DRV8311_DEVICE_COUNT];
 
 /*******************************************************************************
  * Local Functions - Prototypes
@@ -164,71 +177,74 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     spiSetClkDivisor(motorDev, spiCalculateDivider(DRV8311_SPI_CLK_HZ));
 
 
-    uint8_t spiBuf[4] = { 0 };
+    uint8_t spiTxBuf[4] = { 0 };
 
     // Initialize all motor drivers
     drvDisable();
     delay(1);
 
     // Enable parity and lock control reg
-    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
                                  DRV8311_REG_ADDR_SYS_CTRL, 
                                  (DRV_8311_SYS_CTRL_SPI_PEN | DRV_8311_SYS_CTRL_REG_LOCK));
-    spiWrite32Bit(motorDev, spiBuf);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
     // Clear all faults
-    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
-    spiWrite32Bit(motorDev, spiBuf);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
     
     // enable otp read fault
     // enable SPI fault mode
     // set overcurrent protection to disable driver with fast retry (0.5s)
     // set undervoltage protection to disable driver with fast retry (0.5s)
     // set overtemperature protection to disable driver with fast retry (0.5s)
-    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_FLT_MODE, 
         (DRV8311_REG_ADDR_FLT_MODE_OTPFLT_MODE | DRV8311_REG_ADDR_FLT_MODE_SPIFLT_MODE | DRV8311_REG_ADDR_FLT_MODE_OCP_MODE_HIZFAST
         | DRV8311_REG_ADDR_FLT_MODE_UVP_MODE_HIZFAST | DRV8311_REG_ADDR_FLT_MODE_OTSD_MODE_HIZFAST));
-    spiWrite32Bit(motorDev, spiBuf);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
     // enable overtemperature fault monitoring
     // enable overtemperature warning monitoring
     // enable CSAREF undervoltage monitoring
-    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_SYSF_CTRL, 
         (DRV8311_REG_ADDR_SYSF_CTRL_OTAVDD_EN | DRV8311_REG_ADDR_SYSF_CTRL_OTW_EN | DRV8311_REG_ADDR_SYSF_CTRL_CSAREFUV_EN));
-    spiWrite32Bit(motorDev, spiBuf);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
     // DRV8311_REG_ADDR_DRVF_CTRL -> Fine in default state
     // DRV8311_REG_ADDR_FLT_TCTRL -> Fine in default state
 
     // Enable internal PWM Generarion (UP Counter, No Synchronization)
     // TODO: Maybe we need synchronization here
-    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_PWMG_CTRL, 
         (DRV8311_REG_ADDR_PWMG_CTRL_PWM_EN |DRV8311_REG_ADDR_PWMG_CTRL_PWMCNTR_MODE_UP));
-    spiWrite32Bit(motorDev, spiBuf);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
     // DRV8311_REG_ADDR_PWM_CTRL1 -> Fine in default state
     
     // Configure Deadtime and Slewrate
     // TODO: Maybe change these parameters (maybe delay compensation or higher slew rate needed?)
-    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_DRV_CTRL, 
         (DRV8311_REG_ADDR_DRV_CTRL_TDEAD_CTRL_600ns));
-    spiWrite32Bit(motorDev, spiBuf);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
     // TODO: Maybe configure CSA (current sense gain) here if needed (DRV8311_REG_ADDR_CSA_CTRL)
 
     // Clear all faults
-    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
-    spiWrite32Bit(motorDev, spiBuf);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
     // enable chip
     // TODO: remove this after arming/disarming works
     drvEnable();
+
+    // TODO: move it to Interrupt routine of the fault pin
+    drvReadDiagnostics();
 
     return DRV8311_INIT_OK;
 }
@@ -250,7 +266,52 @@ void drvWriteRpm(float const rpm[])
 
 void drvReadDiagnostics(void)
 {
+    uint8_t spiTxBuf[4] = { 0 };
+    uint8_t spiRxBuf[4] = { 0 };
 
+    // read status registers from all chips (warning, this is very slow) -> Would be faster with burst read
+    for(uint8_t i = 0; i < DRV8311_DEVICE_COUNT; i++)
+    {
+        // Device Status 1 Register
+        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+            DRV8311_REG_ADDR_DEV_STS1, 0);
+        spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
+
+        drv8311StatusInfo[i].DEV_STS1 = (spiRxBuf[2] << 8 | spiRxBuf[3] << 0);
+        memset(spiRxBuf, 0, sizeof(spiRxBuf));
+
+        // Over Temperature Status Register
+        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+            DRV8311_REG_ADDR_OT_STS, 0);
+        spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
+
+        drv8311StatusInfo[i].OT_STS = (spiRxBuf[2] << 8 | spiRxBuf[3] << 0);
+        memset(spiRxBuf, 0, sizeof(spiRxBuf));
+
+        // Supply Status Register
+        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+            DRV8311_REG_ADDR_SUP_STS, 0);
+        spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
+
+        drv8311StatusInfo[i].SUP_STS = (spiRxBuf[2] << 8 | spiRxBuf[3] << 0);
+        memset(spiRxBuf, 0, sizeof(spiRxBuf));
+
+        // Driver Status Register
+        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+            DRV8311_REG_ADDR_DRV_STS, 0);
+        spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
+
+        drv8311StatusInfo[i].DRV_STS = (spiRxBuf[2] << 8 | spiRxBuf[3] << 0);
+        memset(spiRxBuf, 0, sizeof(spiRxBuf));
+
+        // System Status Register
+        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+            DRV8311_REG_ADDR_SYS_STS, 0);
+        spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
+
+        drv8311StatusInfo[i].SYS_STS = (spiRxBuf[2] << 8 | spiRxBuf[3] << 0);
+        memset(spiRxBuf, 0, sizeof(spiRxBuf));
+    }
 }
 
 /*******************************************************************************
