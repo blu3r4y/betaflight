@@ -43,10 +43,61 @@
 
 // clock speed 1MHz (TODO: make this ~ 10MHz later)
 #define DRV8311_SPI_CLK_HZ 1000000
+
+// SPI defines
+#define DRV8311_SPIBUF_LEN_SINGLEREG 4
+#define DRV8311_SPI_READ 1
+#define DRV8311_SPI_WRITE 0
+
+// TSPI_Defines
 #define DRV8311_MAX_CNT_TSPI_DEVICES 4
 #define DRV8311_TSPI_BROADCAST 0x0F
+#define DRV8311_TSPI_MOTOR1 0x00
+#define DRV8311_TSPI_MOTOR2 0x01
+#define DRV8311_TSPI_MOTOR3 0x02
+#define DRV8311_TSPI_MOTOR4 0x03
 
-#define DRV8311_REGLLEN_BYTE 4
+
+// register adress defines
+#define DRV8311_REG_ADDR_DEV_STS1      0x00  // Device Status 1 Register (R)
+#define DRV8311_REG_ADDR_OT_STS        0x04  // Over Temperature Status Register (R)
+#define DRV8311_REG_ADDR_SUP_STS       0x05  // Supply Status Register (R)
+#define DRV8311_REG_ADDR_DRV_STS       0x06  // Driver Status Register (R)
+#define DRV8311_REG_ADDR_SYS_STS       0x07  // System Status Register (R)
+#define DRV8311_REG_ADDR_PWM_SYNC_PRD  0x0C  // PWM Sync Period Register (R)
+#define DRV8311_REG_ADDR_FLT_MODE      0x10  // Fault Mode Register (R/W)
+#define DRV8311_REG_ADDR_SYSF_CTRL     0x12  // System Fault Control Register (R/W)
+#define DRV8311_REG_ADDR_DRVF_CTRL     0x13  // Driver Fault Control Register (R/W)
+#define DRV8311_REG_ADDR_FLT_TCTRL     0x16  // Fault Timing Control Register (R/W)
+#define DRV8311_REG_ADDR_FLT_CLR       0x17  // Fault Clear Register (W)
+#define DRV8311_REG_ADDR_PWMG_PERIOD   0x18  // PWM_GEN Period Register (W)
+#define DRV8311_REG_ADDR_PWMG_A_DUTY   0x19  // PWM_GEN A Duty Register (W)
+#define DRV8311_REG_ADDR_PWMG_B_DUTY   0x1A  // PWM_GEN B Duty Register (W)
+#define DRV8311_REG_ADDR_PWMG_C_DUTY   0x1B  // PWM_GEN C Duty Register (W)
+#define DRV8311_REG_ADDR_PWM_STATE     0x1C  // PWM State Register (W)
+#define DRV8311_REG_ADDR_PWMG_CTRL     0x1D  // PWM_GEN Control Register (R/W) -> Done
+#define DRV8311_REG_ADDR_PWM_CTRL1     0x20  // PWM Control Register 1 (R/W) -> Done
+#define DRV8311_REG_ADDR_DRV_CTRL      0x22  // Predriver Control Register (R/W) -> Done
+#define DRV8311_REG_ADDR_CSA_CTRL      0x23  // CSA Control Register (R/W)
+#define DRV8311_REG_ADDR_SYS_CTRL      0x3F  // System Control Register (R/W) --> Done
+
+
+
+// DRV8311_REG_ADDR_FLT_CLR
+#define DRV8311_REG_ADDR_FLT_CLR_FLT_CLR 0x0001
+
+// DRV8311_REG_ADDR_PWMG_CTRL
+#define DRV8311_REG_ADDR_PWMG_CTRL_PWM_EN 0x0400
+#define DRV8311_REG_ADDR_PWMG_CTRL_PWMCNTR_MODE_UP 0x0100
+
+// DRV8311_REG_ADDR_DRV_CTRL
+#define DRV8311_REG_ADDR_DRV_CTRL_DLYCMP_EN 0x0080
+#define DRV8311_REG_ADDR_DRV_CTRL_TDEAD_CTRL_600ns 0x0030
+
+// DRV8311_REG_ADDR_SYS_CTRL
+#define DRV_8311_SYS_CTRL_REG_LOCK 0x0080
+#define DRV_8311_SYS_CTRL_SPI_PEN 0x0040
+
 
 
 /*******************************************************************************
@@ -95,9 +146,6 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
         return DRV8311_INIT_NOT_CONFIGURED;
     }
 
-        // TODO: maybe think about following max7456HardwareReset to awake from sleep mode
-    // drv8311HardwareReset();
-
     // TODO: make this work with multiple chip-select or just short them on board
     motorDev->busType_u.spi.csnPin = IOGetByTag(config->csTags[0]);
 
@@ -105,44 +153,51 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     // TODO: maybe there is a way to make this some even number??
     spiSetClkDivisor(motorDev, spiCalculateDivider(DRV8311_SPI_CLK_HZ));
 
-    // TODO: maybe we also need this?
-    // IOInit(motorDev->busType_u.spi.csnPin, OWNER_OSD_CS, 0);
-    // IOConfigGPIO(motorDev->busType_u.spi.csnPin, SPI_IO_CS_CFG);
-    // IOHi(motorDev->busType_u.spi.csnPin);
 
-    // TODO: spi write tests, see also
-    // max7456.c:376 ... spiWrite(dev, 0xff);
-    //spiWrite(motorDev, 0xAA);
-    IOLo(sleepIO);
-    IOLo(pwmSyncIO);
+    uint8_t spiBuf[4] = { 0 };
 
-    delay(10);
-    uint8_t test_arr[4] = { 0x01, 0x02, 0x03, 0x04};
-    uint16_t data = 0x0001;
+    // Initialize all motor drivers
+    drvDisable();
+    delay(1);
+
+    // Enable parity and lock control reg
+    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+                                 DRV8311_REG_ADDR_SYS_CTRL, 
+                                 (DRV_8311_SYS_CTRL_SPI_PEN | DRV_8311_SYS_CTRL_REG_LOCK));
+    spiWrite32Bit(motorDev, spiBuf);
+
+    // Clear all faults
+    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
+    spiWrite32Bit(motorDev, spiBuf);
     
-    FillSPIWriteBuffer(test_arr, 1, 0x17, data);
-    IOHi(sleepIO);
-    IOHi(pwmSyncIO);
-    spiWrite32Bit(motorDev, test_arr);
-    delay(10);
-    IOLo(sleepIO);
-    IOLo(pwmSyncIO);
-    delay(10);
-    IOHi(sleepIO);
-    IOHi(pwmSyncIO);
+    // Enable internal PWM Generarion (UP Counter, No Synchronization)
+    // TODO: Maybe we need synchronization here
+    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_PWMG_CTRL, 
+        (DRV8311_REG_ADDR_PWMG_CTRL_PWM_EN |DRV8311_REG_ADDR_PWMG_CTRL_PWMCNTR_MODE_UP));
+    spiWrite32Bit(motorDev, spiBuf);
+    
+    // Configure Deadtime and Slewrate
+    //TODO: Maybe change these parameters (maybe delay compensation or higher slew rate needed?)
+    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_DRV_CTRL, 
+        (DRV8311_REG_ADDR_DRV_CTRL_TDEAD_CTRL_600ns));
+    spiWrite32Bit(motorDev, spiBuf);
 
-    // TODO: check if this is correct
+    drvEnable();
+
     return DRV8311_INIT_OK;
 }
 
 void drvEnable(void)
 {
-
+    IOHi(sleepIO);
 }
 
 void drvDisable(void)
 {
-
+    IOLo(sleepIO);
 }
 
 void drvWriteRpm(float const rpm[])
@@ -238,7 +293,7 @@ static drv8311RetStatus_e FillSPIBufferSingleRegAccess(uint8_t * const pBuffer, 
     }
 
     // reset the buffer for a clean start condition
-    memset(pBuffer, 0, DRV8311_REGLLEN_BYTE);
+    memset(pBuffer, 0, DRV8311_SPIBUF_LEN_SINGLEREG);
 
     // fill header
     pBuffer[0] |= (readNotWrite & 0x01 << 7); // Read/write bit
