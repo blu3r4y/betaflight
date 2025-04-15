@@ -75,13 +75,24 @@
 #define DRV8311_REG_ADDR_PWMG_B_DUTY   0x1A  // PWM_GEN B Duty Register (W)
 #define DRV8311_REG_ADDR_PWMG_C_DUTY   0x1B  // PWM_GEN C Duty Register (W)
 #define DRV8311_REG_ADDR_PWM_STATE     0x1C  // PWM State Register (W)
-#define DRV8311_REG_ADDR_PWMG_CTRL     0x1D  // PWM_GEN Control Register (R/W) -> Done
-#define DRV8311_REG_ADDR_PWM_CTRL1     0x20  // PWM Control Register 1 (R/W) -> Done
-#define DRV8311_REG_ADDR_DRV_CTRL      0x22  // Predriver Control Register (R/W) -> Done
+#define DRV8311_REG_ADDR_PWMG_CTRL     0x1D  // PWM_GEN Control Register (R/W)
+#define DRV8311_REG_ADDR_PWM_CTRL1     0x20  // PWM Control Register 1 (R/W)
+#define DRV8311_REG_ADDR_DRV_CTRL      0x22  // Predriver Control Register (R/W)
 #define DRV8311_REG_ADDR_CSA_CTRL      0x23  // CSA Control Register (R/W)
-#define DRV8311_REG_ADDR_SYS_CTRL      0x3F  // System Control Register (R/W) --> Done
+#define DRV8311_REG_ADDR_SYS_CTRL      0x3F  // System Control Register (R/W)
 
 
+// DRV8311_REG_ADDR_FLT_MODE
+#define DRV8311_REG_ADDR_FLT_MODE_OTPFLT_MODE 0x0100
+#define DRV8311_REG_ADDR_FLT_MODE_SPIFLT_MODE 0x0080
+#define DRV8311_REG_ADDR_FLT_MODE_OCP_MODE_HIZFAST 0x0010
+#define DRV8311_REG_ADDR_FLT_MODE_UVP_MODE_HIZFAST 0x0004
+#define DRV8311_REG_ADDR_FLT_MODE_OTSD_MODE_HIZFAST 0x0001
+
+// DRV8311_REG_ADDR_SYSF_CTRL
+#define DRV8311_REG_ADDR_SYSF_CTRL_OTAVDD_EN 0x0400
+#define DRV8311_REG_ADDR_SYSF_CTRL_OTW_EN 0x0200
+#define DRV8311_REG_ADDR_SYSF_CTRL_CSAREFUV_EN 0x0020
 
 // DRV8311_REG_ADDR_FLT_CLR
 #define DRV8311_REG_ADDR_FLT_CLR_FLT_CLR 0x0001
@@ -91,7 +102,6 @@
 #define DRV8311_REG_ADDR_PWMG_CTRL_PWMCNTR_MODE_UP 0x0100
 
 // DRV8311_REG_ADDR_DRV_CTRL
-#define DRV8311_REG_ADDR_DRV_CTRL_DLYCMP_EN 0x0080
 #define DRV8311_REG_ADDR_DRV_CTRL_TDEAD_CTRL_600ns 0x0030
 
 // DRV8311_REG_ADDR_SYS_CTRL
@@ -171,20 +181,53 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
         DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
     spiWrite32Bit(motorDev, spiBuf);
     
+    // enable otp read fault
+    // enable SPI fault mode
+    // set overcurrent protection to disable driver with fast retry (0.5s)
+    // set undervoltage protection to disable driver with fast retry (0.5s)
+    // set overtemperature protection to disable driver with fast retry (0.5s)
+    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_FLT_MODE, 
+        (DRV8311_REG_ADDR_FLT_MODE_OTPFLT_MODE | DRV8311_REG_ADDR_FLT_MODE_SPIFLT_MODE | DRV8311_REG_ADDR_FLT_MODE_OCP_MODE_HIZFAST
+        | DRV8311_REG_ADDR_FLT_MODE_UVP_MODE_HIZFAST | DRV8311_REG_ADDR_FLT_MODE_OTSD_MODE_HIZFAST));
+    spiWrite32Bit(motorDev, spiBuf);
+
+    // enable overtemperature fault monitoring
+    // enable overtemperature warning monitoring
+    // enable CSAREF undervoltage monitoring
+    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_SYSF_CTRL, 
+        (DRV8311_REG_ADDR_SYSF_CTRL_OTAVDD_EN | DRV8311_REG_ADDR_SYSF_CTRL_OTW_EN | DRV8311_REG_ADDR_SYSF_CTRL_CSAREFUV_EN));
+    spiWrite32Bit(motorDev, spiBuf);
+
+    // DRV8311_REG_ADDR_DRVF_CTRL -> Fine in default state
+    // DRV8311_REG_ADDR_FLT_TCTRL -> Fine in default state
+
     // Enable internal PWM Generarion (UP Counter, No Synchronization)
     // TODO: Maybe we need synchronization here
     FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_PWMG_CTRL, 
         (DRV8311_REG_ADDR_PWMG_CTRL_PWM_EN |DRV8311_REG_ADDR_PWMG_CTRL_PWMCNTR_MODE_UP));
     spiWrite32Bit(motorDev, spiBuf);
+
+    // DRV8311_REG_ADDR_PWM_CTRL1 -> Fine in default state
     
     // Configure Deadtime and Slewrate
-    //TODO: Maybe change these parameters (maybe delay compensation or higher slew rate needed?)
+    // TODO: Maybe change these parameters (maybe delay compensation or higher slew rate needed?)
     FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_DRV_CTRL, 
         (DRV8311_REG_ADDR_DRV_CTRL_TDEAD_CTRL_600ns));
     spiWrite32Bit(motorDev, spiBuf);
 
+    // TODO: Maybe configure CSA (current sense gain) here if needed (DRV8311_REG_ADDR_CSA_CTRL)
+
+    // Clear all faults
+    FillSPIBufferSingleRegAccess(spiBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
+    spiWrite32Bit(motorDev, spiBuf);
+
+    // enable chip
+    // TODO: remove this after arming/disarming works
     drvEnable();
 
     return DRV8311_INIT_OK;
