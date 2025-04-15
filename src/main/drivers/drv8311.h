@@ -32,6 +32,13 @@ typedef enum {
     DRV8311_INIT_NOT_CONFIGURED = -2,
 } drv8311InitStatus_e;
 
+typedef enum {
+    // Return status for OK
+    DRV8311_OK = 0,
+    // One of the input parameters was invalid
+    DRV8311_INPUT_PARAM_CHECK_FAILED = -1,
+} drv8311RetStatus_e;
+
 drv8311InitStatus_e drvInit(const drv8311Config_t *config);
 
 void drvEnable(void);
