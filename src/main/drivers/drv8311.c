@@ -30,6 +30,8 @@
 #include "drivers/bus_spi.h"
 #include "drivers/time.h"
 // #include "drivers/io_impl.h"
+#include "drivers/exti.h"
+#include "drivers/nvic.h"
 
 #include "drivers/drv8311.h"
 
@@ -140,6 +142,9 @@ static IO_t currentAdcIO[DRV8311_PHASE_COUNT];
 
 // current status about all drivers
 t_statusInformation drv8311StatusInfo[DRV8311_DEVICE_COUNT];
+
+extiCallbackRec_t faultInterruptHandler[DRV8311_DEVICE_COUNT];
+
 
 /*******************************************************************************
  * Local Functions - Prototypes
@@ -318,6 +323,14 @@ void drvReadDiagnostics(void)
  * Local Functions - Implementation
 */
 
+static void drv311Fault(extiCallbackRec_t *cb)
+{
+    // TODO: Implement errorhandling
+    uint32_t driver_index = cb->caller_id;
+    UNUSED(driver_index);
+}
+
+
 /**
  * @brief Initializes STMs GPIO pins for the DRV8311 driver.
  *
@@ -327,12 +340,15 @@ static void initPins(const drv8311Config_t *config)
 {
     for (int i = 0; i < DRV8311_DEVICE_COUNT; i++)
     {
-        // fault pins
         faultIO[i] = IOGetByTag(config->faultTags[i]);
         if (faultIO[i])
         {
             IOInit(faultIO[i], OWNER_DRV8311, 0);
-            IOConfigGPIO(faultIO[i], IOCFG_IPU); // input with pull-ups
+            EXTIHandlerInit(&faultInterruptHandler[i], drv311Fault);
+            faultInterruptHandler[0].caller_id = i;
+            // TODO: Find out which interrupt priority we should use. It should be high since an error in the Morot driver is critical
+            EXTIConfig(faultIO[i], &faultInterruptHandler[i], NVIC_PRIO_DSHOT_DMA, IOCFG_IPU, BETAFLIGHT_EXTI_TRIGGER_RISING);
+            EXTIEnable(faultIO[i]);
         }
 
         // chip-select pins
