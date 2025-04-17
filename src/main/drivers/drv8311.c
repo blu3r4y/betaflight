@@ -114,7 +114,7 @@
  * Definitions
 */
 
-// TODO: Parse this into bitfields (for know, the uint16 values are enough)
+// TODO: Parse this into bitfields (for now, the uint16 values are enough)
 typedef struct
 {
     uint16_t DEV_STS1;
@@ -145,11 +145,11 @@ t_statusInformation drv8311StatusInfo[DRV8311_DEVICE_COUNT];
  * Local Functions - Prototypes
 */
 
-static void InitPins(const drv8311Config_t *config);
-static drv8311RetStatus_e FillSPIBufferSingleRegAccess(uint8_t * const pBuffer, bool const readNotWrite,
+static void initPins(const drv8311Config_t *config);
+static drv8311RetStatus_e fillSPIBufferSingleRegAccess(uint8_t * const pBuffer, bool const readNotWrite,
                                                        uint8_t const deviceIdx, uint8_t const regAddr, 
                                                        uint16_t const data);
-static bool CalculateEvenParity15FromArray(const uint8_t *pData);
+static bool calculateEvenParity15FromArray(const uint8_t *pData);
 
 /*******************************************************************************
  * API Variables
@@ -162,7 +162,7 @@ static bool CalculateEvenParity15FromArray(const uint8_t *pData);
 drv8311InitStatus_e drvInit(const drv8311Config_t *config)
 {
     // Initialize STM Hardware peripherals for DRV Pins
-    InitPins(config);
+    initPins(config);
     
     // initialize SPI bus
     if (!spiSetBusInstance(motorDev, config->spiDevice)) {
@@ -184,13 +184,13 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     delay(1);
 
     // Enable parity and lock control reg
-    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
                                  DRV8311_REG_ADDR_SYS_CTRL, 
                                  (DRV_8311_SYS_CTRL_SPI_PEN | DRV_8311_SYS_CTRL_REG_LOCK));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
     // Clear all faults
-    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
     
@@ -199,7 +199,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     // set overcurrent protection to disable driver with fast retry (0.5s)
     // set undervoltage protection to disable driver with fast retry (0.5s)
     // set overtemperature protection to disable driver with fast retry (0.5s)
-    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_FLT_MODE, 
         (DRV8311_REG_ADDR_FLT_MODE_OTPFLT_MODE | DRV8311_REG_ADDR_FLT_MODE_SPIFLT_MODE | DRV8311_REG_ADDR_FLT_MODE_OCP_MODE_HIZFAST
         | DRV8311_REG_ADDR_FLT_MODE_UVP_MODE_HIZFAST | DRV8311_REG_ADDR_FLT_MODE_OTSD_MODE_HIZFAST));
@@ -208,7 +208,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     // enable overtemperature fault monitoring
     // enable overtemperature warning monitoring
     // enable CSAREF undervoltage monitoring
-    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_SYSF_CTRL, 
         (DRV8311_REG_ADDR_SYSF_CTRL_OTAVDD_EN | DRV8311_REG_ADDR_SYSF_CTRL_OTW_EN | DRV8311_REG_ADDR_SYSF_CTRL_CSAREFUV_EN));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
@@ -218,7 +218,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
 
     // Enable internal PWM Generarion (UP Counter, No Synchronization)
     // TODO: Maybe we need synchronization here
-    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_PWMG_CTRL, 
         (DRV8311_REG_ADDR_PWMG_CTRL_PWM_EN |DRV8311_REG_ADDR_PWMG_CTRL_PWMCNTR_MODE_UP));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
@@ -227,7 +227,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     
     // Configure Deadtime and Slewrate
     // TODO: Maybe change these parameters (maybe delay compensation or higher slew rate needed?)
-    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_DRV_CTRL, 
         (DRV8311_REG_ADDR_DRV_CTRL_TDEAD_CTRL_600ns));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
@@ -235,7 +235,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     // TODO: Maybe configure CSA (current sense gain) here if needed (DRV8311_REG_ADDR_CSA_CTRL)
 
     // Clear all faults
-    FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
@@ -273,7 +273,7 @@ void drvReadDiagnostics(void)
     for(uint8_t i = 0; i < DRV8311_DEVICE_COUNT; i++)
     {
         // Device Status 1 Register
-        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+        fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
             DRV8311_REG_ADDR_DEV_STS1, 0);
         spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
 
@@ -281,7 +281,7 @@ void drvReadDiagnostics(void)
         memset(spiRxBuf, 0, sizeof(spiRxBuf));
 
         // Over Temperature Status Register
-        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+        fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
             DRV8311_REG_ADDR_OT_STS, 0);
         spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
 
@@ -289,7 +289,7 @@ void drvReadDiagnostics(void)
         memset(spiRxBuf, 0, sizeof(spiRxBuf));
 
         // Supply Status Register
-        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+        fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
             DRV8311_REG_ADDR_SUP_STS, 0);
         spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
 
@@ -297,7 +297,7 @@ void drvReadDiagnostics(void)
         memset(spiRxBuf, 0, sizeof(spiRxBuf));
 
         // Driver Status Register
-        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+        fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
             DRV8311_REG_ADDR_DRV_STS, 0);
         spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
 
@@ -305,7 +305,7 @@ void drvReadDiagnostics(void)
         memset(spiRxBuf, 0, sizeof(spiRxBuf));
 
         // System Status Register
-        FillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
+        fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_READ, i, 
             DRV8311_REG_ADDR_SYS_STS, 0);
         spiReadWrite32Bit(motorDev, spiTxBuf, spiRxBuf);
 
@@ -323,7 +323,7 @@ void drvReadDiagnostics(void)
  *
  * @param[in] config Pointer to pin configuration.
  */
-static void InitPins(const drv8311Config_t *config)
+static void initPins(const drv8311Config_t *config)
 {
     for (int i = 0; i < DRV8311_DEVICE_COUNT; i++)
     {
@@ -388,7 +388,7 @@ static void InitPins(const drv8311Config_t *config)
  * @param[in]  regAddr       Register address to access.
  * @param[in]  data          Data to write.
  */
-static drv8311RetStatus_e FillSPIBufferSingleRegAccess(uint8_t * const pBuffer, bool const readNotWrite,
+static drv8311RetStatus_e fillSPIBufferSingleRegAccess(uint8_t * const pBuffer, bool const readNotWrite,
     uint8_t const deviceIdx, uint8_t const regAddr, uint16_t const data)
 {
     if(pBuffer == NULL || (deviceIdx >= DRV8311_MAX_CNT_TSPI_DEVICES && deviceIdx != DRV8311_TSPI_BROADCAST))
@@ -406,7 +406,7 @@ static drv8311RetStatus_e FillSPIBufferSingleRegAccess(uint8_t * const pBuffer, 
 
     pBuffer[1] |= ((regAddr & 0x1F) << 3); //5 LSBs of Address
 
-    bool parity_header = CalculateEvenParity15FromArray(&(pBuffer[0]));
+    bool parity_header = calculateEvenParity15FromArray(&(pBuffer[0]));
     pBuffer[1] |= ((parity_header & 0x01) << 0); // Parity bit for header
 
     // fill data if this is a write command
@@ -415,7 +415,7 @@ static drv8311RetStatus_e FillSPIBufferSingleRegAccess(uint8_t * const pBuffer, 
         pBuffer[2] |= ((data & 0xEF00) >> 8); // High Data bits
         pBuffer[3] |= ((data & 0x00FF) << 0); // Low Databits
         
-        bool parity_data = CalculateEvenParity15FromArray(&(pBuffer[2]));
+        bool parity_data = calculateEvenParity15FromArray(&(pBuffer[2]));
         pBuffer[2] |= ((parity_data & 0x01) << 7); // Parity bit for data
     }
     return DRV8311_OK;
@@ -431,7 +431,7 @@ static drv8311RetStatus_e FillSPIBufferSingleRegAccess(uint8_t * const pBuffer, 
  * @return true  Parity bit should be high (1).
  * @return false Parity bit should be low (0).
  */
-static bool CalculateEvenParity15FromArray(const uint8_t *pData)
+static bool calculateEvenParity15FromArray(const uint8_t *pData)
 {
     // Combine bytes into 16-bit value (big-endian: pData[0] = MSB, pData[1] = LSB)
     uint16_t value = ((uint16_t)pData[0] << 8) | pData[1];
