@@ -363,6 +363,34 @@ static void initPins(const drv8311Config_t *config)
         IOLo(pwmSyncIO); // do not use now
         IOConfigGPIO(pwmSyncIO, IOCFG_OUT_PP); // push-pull output
     }
+    //Use this Code in a new PCB generation, where the PWM Sync signal is connected to a PWM pin of the uC...
+    // This code toggles the Pin in Hardware
+    /* 
+    const timerHardware_t *timer = timerAllocate(config->pwnSyncTag, OWNER_DRV8311, 0);
+    IO_t io = IOGetByTag(config->pwnSyncTag);
+    
+    if (io && timer) {
+        // Step 2: Setup IO
+        IOInit(io, OWNER_DRV8311, 0);
+        IOConfigGPIOAF(io, IOCFG_AF_PP, timer->alternateFunction);
+    
+        // Step 3: Define pwm output
+        pwmOutputPort_t pwmOutput;
+        pwmOutput.io = io;
+        pwmOutput.enabled = false;
+    
+        // Step 4: Configure PWM
+        const uint32_t freqHz = 20000;
+        const uint32_t timerHz = PWM_TIMER_1MHZ;
+        const uint32_t period = timerHz / freqHz;
+        const uint32_t duty = period / 2;
+    
+        pwmOutConfig(&pwmOutput.channel, timer, timerHz, period, duty, 0);
+        *pwmOutput.channel.ccr = duty;
+    
+        pwmOutput.enabled = true;
+    }
+    */    
 
     for (int i = 0; i < DRV8311_PHASE_COUNT; i++)
     {
