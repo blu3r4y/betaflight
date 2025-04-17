@@ -35,6 +35,7 @@ typedef void extiHandlerCallback(extiCallbackRec_t *self);
 
 struct extiCallbackRec_s {
     extiHandlerCallback *fn;
+    uint32_t caller_id;
 };
 
 void EXTIInit(void);
