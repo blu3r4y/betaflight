@@ -41,8 +41,35 @@ typedef enum {
 
 drv8311InitStatus_e drvInit(const drv8311Config_t *config);
 
+/**
+ * @brief Enable all motors.
+ *
+ * This function powers up or activates all necessary components
+ * to allow the motors to spin.
+ */
 void drvEnable(void);
+
+/**
+ * @brief Disable all motors.
+ *
+ * This function powers down all motors immediately
+ */
 void drvDisable(void);
 
-void drvWriteRpm(float const rpm[]);
+/**
+ * @brief Set the motor speed as a percentage-based PWM signal.
+ *
+ * Writes the desired motor speed in percent (0 to 100) to each channel.
+ *
+ * @param[in] rpm  Array of PWM values in percent (0–100) for each motor channel.
+ *                 The length of the array depends on the number of connected motors.
+ */
+void drvWriteRpm(uint8_t const rpm[]);
+
+/**
+ * @brief Read and process diagnostics from the motor driver.
+ *
+ * This function reads diagnostic information (e.g., faults, status flags)
+ * from the driver and stores them to an internal struct.
+ */
 void drvReadDiagnostics(void);

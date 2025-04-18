@@ -52,13 +52,15 @@
 #define DRV8311_SPI_WRITE 0
 
 // TSPI_Defines
+typedef enum
+{
+    DRV8311_TSPI_MOTOR1 = 0x00,
+    DRV8311_TSPI_MOTOR2 = 0x01,
+    DRV8311_TSPI_MOTOR3 = 0x02,
+    DRV8311_TSPI_MOTOR4 = 0x03,
+    DRV8311_TSPI_BROADCAST = 0x0F
+}DRV8311_TSPI_t;
 #define DRV8311_MAX_CNT_TSPI_DEVICES 4
-#define DRV8311_TSPI_BROADCAST 0x0F
-#define DRV8311_TSPI_MOTOR1 0x00
-#define DRV8311_TSPI_MOTOR2 0x01
-#define DRV8311_TSPI_MOTOR3 0x02
-#define DRV8311_TSPI_MOTOR4 0x03
-
 
 // register adress defines
 #define DRV8311_REG_ADDR_DEV_STS1      0x00  // Device Status 1 Register (R)
@@ -98,6 +100,12 @@
 
 // DRV8311_REG_ADDR_FLT_CLR
 #define DRV8311_REG_ADDR_FLT_CLR_FLT_CLR 0x0001
+
+// DRV8311_REG_ADDR_PWMG_PERIOD
+#define DRV8311_REG_ADDR_PWMG_PERIOD_MAX 0xFFF
+
+// DRV8311_REG_ADDR_PWMG_X_DUTY
+#define DRV8311_REG_ADDR_PWMG_X_DUTY_50PCT 0x800
 
 // DRV8311_REG_ADDR_PWMG_CTRL
 #define DRV8311_REG_ADDR_PWMG_CTRL_PWM_EN 0x0400
@@ -244,6 +252,24 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
         DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
+    // Set periode to highest possible value (lowest rpm)
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_PWMG_PERIOD, DRV8311_REG_ADDR_PWMG_PERIOD_MAX);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
+
+    // Set dutycycle to 50% for every phase and every motor
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_PWMG_A_DUTY, DRV8311_REG_ADDR_PWMG_X_DUTY_50PCT);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
+    
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_PWMG_B_DUTY, DRV8311_REG_ADDR_PWMG_X_DUTY_50PCT);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
+    
+    fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
+        DRV8311_REG_ADDR_PWMG_C_DUTY, DRV8311_REG_ADDR_PWMG_X_DUTY_50PCT);
+    spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
+
     // enable chip
     // TODO: remove this after arming/disarming works
     drvEnable();
@@ -264,9 +290,35 @@ void drvDisable(void)
     IOLo(sleepIO);
 }
 
-void drvWriteRpm(float const rpm[])
+void drvWriteRpm(uint8_t const rpm[])
 {
-    UNUSED(rpm);
+    #define RPM_PERCENT_MAX 100
+    uint8_t spiTxBuf[4] = { 0 };
+
+    if(rpm == NULL) return;
+
+    for(uint8_t i = 0; i < DRV8311_MAX_CNT_TSPI_DEVICES; i++)
+    {
+        uint16_t rpmPeriode = 0;
+
+        // calculate duty cycle for the motors (inverse to frequency)
+        if (rpm[i] >= RPM_PERCENT_MAX)
+        {
+            rpmPeriode = 0;
+        }
+        else if (rpm[i] == 0)
+        {
+            rpmPeriode = DRV8311_REG_ADDR_PWMG_PERIOD_MAX;
+        }
+        else
+        {
+            rpmPeriode = DRV8311_REG_ADDR_PWMG_PERIOD_MAX / rpm[i];
+        }
+
+        fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, i, 
+            DRV8311_REG_ADDR_PWMG_PERIOD, rpmPeriode);
+        spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
+    }
 }
 
 void drvReadDiagnostics(void)
