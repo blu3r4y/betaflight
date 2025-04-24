@@ -62,6 +62,8 @@ typedef enum
 }DRV8311_TSPI_t;
 #define DRV8311_MAX_CNT_TSPI_DEVICES 4
 
+// TODO: maybe rework this to use a union struct bitfield
+
 // register adress defines
 #define DRV8311_REG_ADDR_DEV_STS1      0x00  // Device Status 1 Register (R)
 #define DRV8311_REG_ADDR_OT_STS        0x04  // Over Temperature Status Register (R)
@@ -172,6 +174,8 @@ static bool calculateEvenParity15FromArray(const uint8_t *pData);
  * API Functions
  */
 
+// TODO: replace spiReadWrite32Bit with spiReadWriteBuf
+
 drv8311InitStatus_e drvInit(const drv8311Config_t *config)
 {
     // Initialize STM Hardware peripherals for DRV Pins
@@ -194,6 +198,8 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
 
     // Initialize all motor drivers
     drvDisable();
+
+    // TODO: maybe this is not needed
     delay(1);
 
     // Enable parity and lock control reg
@@ -229,7 +235,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     // DRV8311_REG_ADDR_DRVF_CTRL -> Fine in default state
     // DRV8311_REG_ADDR_FLT_TCTRL -> Fine in default state
 
-    // Enable internal PWM Generarion (UP Counter, No Synchronization)
+    // Enable internal PWM Generation (UP Counter, No Synchronization)
     // TODO: Maybe we need synchronization here
     fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_PWMG_CTRL, 
@@ -252,7 +258,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
         DRV8311_REG_ADDR_FLT_CLR, (DRV8311_REG_ADDR_FLT_CLR_FLT_CLR));
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
 
-    // Set periode to highest possible value (lowest rpm)
+    // Set period to highest possible value (lowest rpm)
     fillSPIBufferSingleRegAccess(spiTxBuf, DRV8311_SPI_WRITE, DRV8311_TSPI_BROADCAST, 
         DRV8311_REG_ADDR_PWMG_PERIOD, DRV8311_REG_ADDR_PWMG_PERIOD_MAX);
     spiReadWrite32Bit(motorDev, spiTxBuf, NULL);
@@ -500,7 +506,7 @@ static drv8311RetStatus_e fillSPIBufferSingleRegAccess(uint8_t * const pBuffer, 
     pBuffer[0] |= ((deviceIdx & 0x0F) << 3); // 2 Bit device index
     pBuffer[0] |= ((regAddr & 0xE0) >> 5); // 3 MSBs of Address
 
-    pBuffer[1] |= ((regAddr & 0x1F) << 3); //5 LSBs of Address
+    pBuffer[1] |= ((regAddr & 0x1F) << 3); // 5 LSBs of Address
 
     bool parity_header = calculateEvenParity15FromArray(&(pBuffer[0]));
     pBuffer[1] |= ((parity_header & 0x01) << 0); // Parity bit for header
