@@ -75,7 +75,7 @@ typedef struct SPIDevice_s {
 #endif
     rccPeriphTag_t rcc;
     volatile uint16_t errorCount;
-    bool leadingEdge;
+    uint8_t mode;  // SPIMode_e: Current SPI mode of the bus
 #ifdef USE_DMA
     uint8_t dmaIrqHandler;
 #endif

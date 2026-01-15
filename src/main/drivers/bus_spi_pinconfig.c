@@ -471,7 +471,7 @@ void spiPinConfigure(const spiPinConfig_t *pConfig)
             pDev->af = hw->af;
 #endif
             pDev->rcc = hw->rcc;
-            pDev->leadingEdge = false; // XXX Should be part of transfer context
+            pDev->mode = SPI_MODE3_POL_HIGH_EDGE_2ND; // Default to Mode 3 for backward compatibility
 #if defined(USE_DMA) && defined(USE_HAL_DRIVER)
             pDev->dmaIrqHandler = hw->dmaIrqHandler;
 #endif

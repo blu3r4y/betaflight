@@ -195,10 +195,7 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
 
     // DRV8311 requires SPI Mode 1 (CPOL=0, CPHA=1): clock idles LOW, 
     // data captured on falling edge, data shifted out on rising edge.
-    // Betaflight's leadingEdge=true gives Mode 0 (CPOL=0, CPHA=0) which is
-    // the closest available - clock idles LOW as required.
-    // NOTE: For proper Mode 1 support, Betaflight's SPI API may need extension.
-    spiSetClkPhasePolarity(motorDev, true);  // Use Mode 0 (CPOL=0, CPHA=0);
+    spiSetMode(motorDev, SPI_MODE1_POL_LOW_EDGE_2ND);
 
 
     uint8_t spiTxBuf[4] = { 0 };

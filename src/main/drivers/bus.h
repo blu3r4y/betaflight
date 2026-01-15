@@ -51,7 +51,7 @@ typedef struct busDevice_s {
         struct busSpi_s {
             SPI_TypeDef *instance;
             uint16_t speed;
-            bool leadingEdge;
+            uint8_t mode;  // SPIMode_e: SPI clock polarity and phase mode (0-3)
         } spi;
         struct busI2C_s {
             I2CDevice device;
@@ -85,7 +85,7 @@ typedef struct extDevice_s {
         struct extSpi_s {
             uint16_t speed;
             IO_t csnPin;
-            bool leadingEdge;
+            uint8_t mode;  // SPIMode_e: SPI clock polarity and phase mode (0-3)
         } spi;
         struct extI2C_s {
             uint8_t address;

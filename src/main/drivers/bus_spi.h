@@ -122,7 +122,13 @@ uint16_t spiCalculateDivider(uint32_t freq);
 uint32_t spiCalculateClock(uint16_t spiClkDivisor);
 // Set the clock divisor to be used for accesses by the given device
 void spiSetClkDivisor(const extDevice_t *dev, uint16_t divider);
-// Set the clock phase/polarity to be used for accesses by the given device
+// Set the SPI mode (0-3) to be used for accesses by the given device
+// Mode 0: CPOL=0, CPHA=0 - clock idle low, sample on rising edge
+// Mode 1: CPOL=0, CPHA=1 - clock idle low, sample on falling edge  
+// Mode 2: CPOL=1, CPHA=0 - clock idle high, sample on falling edge
+// Mode 3: CPOL=1, CPHA=1 - clock idle high, sample on rising edge
+void spiSetMode(const extDevice_t *dev, SPIMode_e mode);
+// Legacy function - set the clock phase/polarity (leadingEdge=true for Mode 0, false for Mode 3)
 void spiSetClkPhasePolarity(const extDevice_t *dev, bool leadingEdge);
 // Enable/disable DMA on a specific device. Enabled by default.
 void spiDmaEnable(const extDevice_t *dev, bool enable);

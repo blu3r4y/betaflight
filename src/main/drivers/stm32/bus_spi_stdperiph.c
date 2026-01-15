@@ -338,18 +338,31 @@ void spiSequenceStart(const extDevice_t *dev)
         bus->busType_u.spi.speed = dev->busType_u.spi.speed;
     }
 
-    if (dev->busType_u.spi.leadingEdge != bus->busType_u.spi.leadingEdge) {
+    if (dev->busType_u.spi.mode != bus->busType_u.spi.mode) {
         // Switch SPI clock polarity/phase
         instance->CR1 &= ~(SPI_CPOL_High | SPI_CPHA_2Edge);
 
-        // Apply setting
-        if (dev->busType_u.spi.leadingEdge) {
+        // Apply setting based on SPI mode
+        switch (dev->busType_u.spi.mode) {
+        case SPI_MODE0_POL_LOW_EDGE_1ST:
+            // Mode 0: CPOL=0, CPHA=0
             instance->CR1 |= SPI_CPOL_Low | SPI_CPHA_1Edge;
-        } else
-        {
+            break;
+        case SPI_MODE1_POL_LOW_EDGE_2ND:
+            // Mode 1: CPOL=0, CPHA=1
+            instance->CR1 |= SPI_CPOL_Low | SPI_CPHA_2Edge;
+            break;
+        case SPI_MODE2_POL_HIGH_EDGE_1ST:
+            // Mode 2: CPOL=1, CPHA=0
+            instance->CR1 |= SPI_CPOL_High | SPI_CPHA_1Edge;
+            break;
+        case SPI_MODE3_POL_HIGH_EDGE_2ND:
+        default:
+            // Mode 3: CPOL=1, CPHA=1
             instance->CR1 |= SPI_CPOL_High | SPI_CPHA_2Edge;
+            break;
         }
-        bus->busType_u.spi.leadingEdge = dev->busType_u.spi.leadingEdge;
+        bus->busType_u.spi.mode = dev->busType_u.spi.mode;
     }
 
     SPI_Cmd(instance, ENABLE);

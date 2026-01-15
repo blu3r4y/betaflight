@@ -728,10 +728,19 @@ void spiSetClkDivisor(const extDevice_t *dev, uint16_t divisor)
     ((extDevice_t *)dev)->busType_u.spi.speed = divisor;
 }
 
+// Set the SPI mode to be used for accesses by the given device
+void spiSetMode(const extDevice_t *dev, SPIMode_e mode)
+{
+    ((extDevice_t *)dev)->busType_u.spi.mode = mode;
+}
+
+// Legacy function for backward compatibility
 // Set the clock phase/polarity to be used for accesses by the given device
 void spiSetClkPhasePolarity(const extDevice_t *dev, bool leadingEdge)
 {
-    ((extDevice_t *)dev)->busType_u.spi.leadingEdge = leadingEdge;
+    // leadingEdge=true  -> Mode 0 (CPOL=0, CPHA=0)
+    // leadingEdge=false -> Mode 3 (CPOL=1, CPHA=1)
+    ((extDevice_t *)dev)->busType_u.spi.mode = leadingEdge ? SPI_MODE0_POL_LOW_EDGE_1ST : SPI_MODE3_POL_HIGH_EDGE_2ND;
 }
 
 // Enable/disable DMA on a specific device. Enabled by default.

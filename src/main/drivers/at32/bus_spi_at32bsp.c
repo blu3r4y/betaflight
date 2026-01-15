@@ -320,15 +320,31 @@ void spiSequenceStart(const extDevice_t *dev)
         bus->busType_u.spi.speed = dev->busType_u.spi.speed;
     }
 
-    if (dev->busType_u.spi.leadingEdge != bus->busType_u.spi.leadingEdge) {
-        if (dev->busType_u.spi.leadingEdge) {
+    if (dev->busType_u.spi.mode != bus->busType_u.spi.mode) {
+        switch (dev->busType_u.spi.mode) {
+        case SPI_MODE0_POL_LOW_EDGE_1ST:
+            // Mode 0: CPOL=0, CPHA=0
             instance->ctrl1_bit.clkpol = SPI_CLOCK_POLARITY_LOW;
             instance->ctrl1_bit.clkpha = SPI_CLOCK_PHASE_1EDGE;
-        } else {
+            break;
+        case SPI_MODE1_POL_LOW_EDGE_2ND:
+            // Mode 1: CPOL=0, CPHA=1
+            instance->ctrl1_bit.clkpol = SPI_CLOCK_POLARITY_LOW;
+            instance->ctrl1_bit.clkpha = SPI_CLOCK_PHASE_2EDGE;
+            break;
+        case SPI_MODE2_POL_HIGH_EDGE_1ST:
+            // Mode 2: CPOL=1, CPHA=0
+            instance->ctrl1_bit.clkpol = SPI_CLOCK_POLARITY_HIGH;
+            instance->ctrl1_bit.clkpha = SPI_CLOCK_PHASE_1EDGE;
+            break;
+        case SPI_MODE3_POL_HIGH_EDGE_2ND:
+        default:
+            // Mode 3: CPOL=1, CPHA=1
             instance->ctrl1_bit.clkpol = SPI_CLOCK_POLARITY_HIGH;
             instance->ctrl1_bit.clkpha = SPI_CLOCK_PHASE_2EDGE;
+            break;
         }
-        bus->busType_u.spi.leadingEdge = dev->busType_u.spi.leadingEdge;
+        bus->busType_u.spi.mode = dev->busType_u.spi.mode;
     }
 
     spi_enable(instance, TRUE);
