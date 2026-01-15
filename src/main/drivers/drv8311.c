@@ -193,6 +193,13 @@ drv8311InitStatus_e drvInit(const drv8311Config_t *config)
     // TODO: maybe there is a way to make this some even number??
     spiSetClkDivisor(motorDev, spiCalculateDivider(DRV8311_SPI_CLK_HZ));
 
+    // DRV8311 requires SPI Mode 1 (CPOL=0, CPHA=1): clock idles LOW, 
+    // data captured on falling edge, data shifted out on rising edge.
+    // Betaflight's leadingEdge=true gives Mode 0 (CPOL=0, CPHA=0) which is
+    // the closest available - clock idles LOW as required.
+    // NOTE: For proper Mode 1 support, Betaflight's SPI API may need extension.
+    spiSetClkPhasePolarity(motorDev, true);  // Use Mode 0 (CPOL=0, CPHA=0);
+
 
     uint8_t spiTxBuf[4] = { 0 };
 
@@ -414,7 +421,7 @@ static void initPins(const drv8311Config_t *config)
         if (csIO[i])
         {
             IOInit(csIO[i], OWNER_DRV8311, 0);
-            IOLo(csIO[i]); // start with not selected
+            IOHi(csIO[i]); // start with not selected (nSCS is active-low)
             IOConfigGPIO(csIO[i], IOCFG_OUT_PP); // push-pull output
         }
     }
@@ -502,8 +509,8 @@ static drv8311RetStatus_e fillSPIBufferSingleRegAccess(uint8_t * const pBuffer, 
     memset(pBuffer, 0, DRV8311_SPIBUF_LEN_SINGLEREG);
 
     // fill header
-    pBuffer[0] |= (readNotWrite & 0x01 << 7); // Read/write bit
-    pBuffer[0] |= ((deviceIdx & 0x0F) << 3); // 2 Bit device index
+    pBuffer[0] |= ((readNotWrite & 0x01) << 7); // Read/write bit (bit 15 of 16-bit header)
+    pBuffer[0] |= ((deviceIdx & 0x0F) << 3); // 4-bit device index (bits 14-11)
     pBuffer[0] |= ((regAddr & 0xE0) >> 5); // 3 MSBs of Address
 
     pBuffer[1] |= ((regAddr & 0x1F) << 3); // 5 LSBs of Address
@@ -514,11 +521,11 @@ static drv8311RetStatus_e fillSPIBufferSingleRegAccess(uint8_t * const pBuffer, 
     // fill data if this is a write command
     if(!readNotWrite)
     {
-        pBuffer[2] |= ((data & 0xEF00) >> 8); // High Data bits
-        pBuffer[3] |= ((data & 0x00FF) << 0); // Low Databits
+        pBuffer[2] |= ((data & 0x7F00) >> 8); // High Data bits (bits 14-8), bit 15 reserved for parity
+        pBuffer[3] |= ((data & 0x00FF) >> 0); // Low Data bits (bits 7-0)
         
         bool parity_data = calculateEvenParity15FromArray(&(pBuffer[2]));
-        pBuffer[2] |= ((parity_data & 0x01) << 7); // Parity bit for data
+        pBuffer[2] |= ((parity_data & 0x01) << 7); // Parity bit for data (bit 15)
     }
     return DRV8311_OK;
 }
