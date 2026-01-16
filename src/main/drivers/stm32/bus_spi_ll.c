@@ -535,19 +535,36 @@ FAST_CODE void spiSequenceStart(const extDevice_t *dev)
     }
 
     // Switch SPI clock polarity/phase if necessary
-    if (dev->busType_u.spi.leadingEdge != bus->busType_u.spi.leadingEdge) {
-        if (dev->busType_u.spi.leadingEdge) {
+    if (dev->busType_u.spi.mode != bus->busType_u.spi.mode) {
+        switch (dev->busType_u.spi.mode) {
+        case SPI_MODE0_POL_LOW_EDGE_1ST:
+            // Mode 0: CPOL=0, CPHA=0 - clock idle low, sample on 1st (rising) edge
             IOConfigGPIOAF(IOGetByTag(spi->sck), SPI_IO_AF_SCK_CFG_LOW, spi->sckAF);
             LL_SPI_SetClockPhase(instance, LL_SPI_PHASE_1EDGE);
             LL_SPI_SetClockPolarity(instance, LL_SPI_POLARITY_LOW);
-        }
-        else {
+            break;
+        case SPI_MODE1_POL_LOW_EDGE_2ND:
+            // Mode 1: CPOL=0, CPHA=1 - clock idle low, sample on 2nd (falling) edge
+            IOConfigGPIOAF(IOGetByTag(spi->sck), SPI_IO_AF_SCK_CFG_LOW, spi->sckAF);
+            LL_SPI_SetClockPhase(instance, LL_SPI_PHASE_2EDGE);
+            LL_SPI_SetClockPolarity(instance, LL_SPI_POLARITY_LOW);
+            break;
+        case SPI_MODE2_POL_HIGH_EDGE_1ST:
+            // Mode 2: CPOL=1, CPHA=0 - clock idle high, sample on 1st (falling) edge
+            IOConfigGPIOAF(IOGetByTag(spi->sck), SPI_IO_AF_SCK_CFG_HIGH, spi->sckAF);
+            LL_SPI_SetClockPhase(instance, LL_SPI_PHASE_1EDGE);
+            LL_SPI_SetClockPolarity(instance, LL_SPI_POLARITY_HIGH);
+            break;
+        case SPI_MODE3_POL_HIGH_EDGE_2ND:
+        default:
+            // Mode 3: CPOL=1, CPHA=1 - clock idle high, sample on 2nd (rising) edge
             IOConfigGPIOAF(IOGetByTag(spi->sck), SPI_IO_AF_SCK_CFG_HIGH, spi->sckAF);
             LL_SPI_SetClockPhase(instance, LL_SPI_PHASE_2EDGE);
             LL_SPI_SetClockPolarity(instance, LL_SPI_POLARITY_HIGH);
+            break;
         }
 
-        bus->busType_u.spi.leadingEdge = dev->busType_u.spi.leadingEdge;
+        bus->busType_u.spi.mode = dev->busType_u.spi.mode;
     }
 
 #if !defined(STM32H7)
